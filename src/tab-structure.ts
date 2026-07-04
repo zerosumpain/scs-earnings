@@ -75,18 +75,19 @@ export function renderStructure(main: HTMLElement, ds: DataSet, ctx: Ctx) {
 
   // ---- 3. Pay-bill decomposition: price (mean pay) vs volume (headcount) ----
   const billRes = series(ds, filter, 'paybill', 'none').groups[0]?.values ?? [];
-  const headRes = series(ds, filter, 'headcount', 'none').groups[0]?.values ?? [];
+  const fteRes = series(ds, filter, 'fte', 'none').groups[0]?.values ?? [];
   const meanRes = series(ds, filter, 'meanFTE', 'none').groups[0]?.values ?? [];
   const fi = firstIdx(billRes), li = lastIdx(billRes);
   const decompHost = h('div', {});
   if (fi >= 0 && li > fi) {
+    // pay bill = mean-pay-per-FTE (price) x total FTE (volume): an exact identity
     const dPrice = pctChange(meanRes[fi], meanRes[li]);
-    const dVol = pctChange(headRes[fi], headRes[li]);
+    const dVol = pctChange(fteRes[fi], fteRes[li]);
     const dBill = pctChange(billRes[fi], billRes[li]);
     decompHost.append(h('div', { class: 'tiles' }, [
       tile('Pay bill change', pct(dBill), gbp(billRes[fi], { compact: true }) + ' → ' + gbp(billRes[li], { compact: true })),
-      tile('↳ Price effect (mean pay)', pct(dPrice), gbp(meanRes[fi], { compact: true }) + ' → ' + gbp(meanRes[li], { compact: true })),
-      tile('↳ Volume effect (headcount)', pct(dVol), num(headRes[fi]) + ' → ' + num(headRes[li])),
+      tile('↳ Price effect (mean pay/FTE)', pct(dPrice), gbp(meanRes[fi], { compact: true }) + ' → ' + gbp(meanRes[li], { compact: true })),
+      tile('↳ Volume effect (FTE)', pct(dVol), num(fteRes[fi], 0) + ' → ' + num(fteRes[li], 0)),
     ]));
   }
   const billLineHost = h('div', { style: { marginTop: '10px' } });

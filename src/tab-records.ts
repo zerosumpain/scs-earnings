@@ -53,7 +53,7 @@ export function renderRecords(main: HTMLElement, ds: DataSet, state?: AppState) 
   movers.sort((a, b) => b.value - a.value);
   const moverHost = h('div', {});
   barChart(moverHost, { rows: movers.map(m => ({ key: m.key, label: deptName(ds, m.key), value: m.value, color: m.value >= 0 ? '#5b8a2a' : '#b23a2a' })), valueFormat: (n) => pct(n, 1) + '/yr' });
-  canvas.append(card('Fastest-rising departments', 'Compound annual growth in median senior pay, first to latest snapshot (nominal)', moverHost));
+  canvas.append(card('Fastest-rising departments', `Compound annual growth in median senior pay, first to latest snapshot (${s.realTerms ? 'real terms' : 'nominal'})`, moverHost));
 
   // ---- 3. Searchable / sortable top-earners explorer ----
   canvas.append(recordsExplorer(ds));

@@ -71,7 +71,7 @@ function render() {
   else if (state.tab === 'compare') renderCompare(main);
   else if (state.tab === 'professions') renderProfessions(main, ds, { series, toFilter: (extra?: Partial<Filter>) => toFilter(state, extra), state });
   else if (state.tab === 'structure') renderStructure(main, ds, { series, toFilter: (extra?: Partial<Filter>) => toFilter(state, extra), state });
-  else if (state.tab === 'records') renderRecords(main, ds);
+  else if (state.tab === 'records') renderRecords(main, ds, state);
   else if (state.tab === 'method') renderMethod(main, ds);
   app.append(footer());
 }
@@ -183,7 +183,7 @@ function controls(): HTMLElement {
     ]),
     h('label', { class: 'toggle-row', style: { marginTop: '10px' } }, [
       Object.assign(document.createElement('input'), { type: 'checkbox', checked: state.realTerms, onchange: (e: any) => update({ realTerms: e.target.checked }) }),
-      `Real terms (2015 £, CPIH)`,
+      `Real terms (today's £, CPIH)`,
     ]),
   ]));
 
@@ -305,7 +305,7 @@ function subtitleFor(s: AppState, total: number): string {
   if (s.ddat === 1) bits.push('DDaT roles only');
   if (s.policy === 1) bits.push('policy roles only');
   if (s.depts.length) bits.push(`${s.depts.length} dept${s.depts.length > 1 ? 's' : ''}`);
-  if (s.realTerms) bits.push('real terms (2015 £)');
+  if (s.realTerms) bits.push("real terms (today's £)");
   return bits.length ? bits.join(' · ') : 'all senior posts';
 }
 

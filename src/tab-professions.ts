@@ -93,7 +93,7 @@ export function renderProfessions(main: HTMLElement, ds: DataSet, ctx: Ctx) {
   }).filter(Boolean) as { key: string; label: string; value: number }[];
   lbRows.sort((a, b) => b.value - a.value);
   barChart(lbHost, { rows: lbRows.map((r, i) => ({ ...r, color: r.value >= 0 ? '#5b8a2a' : '#b23a2a' })), valueFormat: (n) => pct(n, 1) + '/yr' });
-  canvas.append(card('Profession pay growth', 'Compound annual growth in median senior pay, first to latest snapshot (nominal)', lbHost));
+  canvas.append(card('Profession pay growth', `Compound annual growth in median senior pay, first to latest snapshot (${ctx.state.realTerms ? 'real terms' : 'nominal'})`, lbHost));
 
   // ---- 5. Digital job-title emergence timeline ----
   const digHost = h('div', {});

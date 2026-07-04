@@ -86,7 +86,7 @@ export function renderMethod(main: HTMLElement, ds: DataSet) {
   const cpihWrap = h('div', { class: 'prose' });
   const idx = ds.meta.cpih.index;
   const yrs = Object.keys(idx).map(Number).sort();
-  cpihWrap.innerHTML = `<p>Real-terms figures deflate nominal pay by the ONS <b>CPIH</b> index (2015 = 100), source: <i>${ds.meta.cpih.source}</i>. The index used:</p>` +
+  cpihWrap.innerHTML = `<p>The real-terms toggle expresses every pay figure in <b>constant present-day (latest-year) pounds</b> — i.e. "today's money" — by deflating with the ONS <b>CPIH</b> index (itself based at 2015 = 100), source: <i>${ds.meta.cpih.source}</i>. The most recent snapshot is therefore unchanged; earlier pay is scaled up to today's prices. The index used:</p>` +
     `<div class="table-scroll"><table class="data-table"><thead><tr><th>Year</th>${yrs.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody><tr><td class="tperiod">CPIH</td>${yrs.map(y => `<td>${idx[y].toFixed(1)}</td>`).join('')}</tr></tbody></table></div>`;
   canvas.append(card('Real-terms deflator transparency', 'The exact CPIH series behind the real-terms toggle', cpihWrap));
 
