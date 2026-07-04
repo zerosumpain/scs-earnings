@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="4" fill="#ede4d4"></rect>
+  <text x="16" y="14" text-anchor="middle" font-family="ui-monospace, &#39;DM Mono&#39;, &#39;JetBrains Mono&#39;, monospace" font-weight="500" font-size="13" fill="#c4570a" opacity="0.9">&gt;</text>
+  <text x="16" y="27" text-anchor="middle" font-family="ui-monospace, &#39;DM Mono&#39;, &#39;JetBrains Mono&#39;, monospace" font-weight="500" font-size="13" fill="#1a1008" letter-spacing="-0.5">sr.</text>
+</svg>

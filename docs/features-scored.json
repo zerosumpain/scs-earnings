@@ -1,0 +1,434 @@
+[
+ {
+  "name": "\"More than the PM\" benchmark tracker",
+  "category": "comparison",
+  "description": "A running count and named list of senior posts whose pay-band midpoint (and ceiling) tops external salary benchmarks — Prime Minister (~£172k), Cabinet Secretary, an MP's ~£91k, median UK full-time earnings — plotted over time with each benchmark as a reference line. Answers the perennial \"how many mandarins out-earn the PM?\" and shows the number climbing snapshot by snapshot.",
+  "score": 84
+ },
+ {
+  "name": "DDaT vs Policy Grade-Controlled Premium",
+  "category": "comparison",
+  "description": "Holding grade constant, compute the median pay gap between occupational groups (DDaT/digital vs Policy vs Finance/Legal etc.) and track it over time. Unlike a raw time series, controlling for grade isolates the true 'digital skills premium' — evidence for whether scarce-skill market supplements are actually being paid within the same rank.",
+  "score": 83
+ },
+ {
+  "name": "Occupational pay-premium heatmap",
+  "category": "chart",
+  "description": "A grade × professional-group grid coloured by median pay and by premium relative to the Policy baseline at the same grade, exposing where DDaT/digital, commercial and legal specialists command a premium — or discount — over generalist policy staff. Quantifies the \"digital pay premium\" at each rung of the SCS ladder.",
+  "score": 83
+ },
+ {
+  "name": "Grade Band Anatomy & Overlap",
+  "category": "pay-structure",
+  "description": "For each grade (SCS1-4/PermSec) draw a horizontal range/box chart of post pay bands (floor-P25-median-P75-ceiling) on a shared £ axis, shading the zones where adjacent grades overlap. It exposes the core pay-structure question SSRB always asks: how much of an SCS2's pay range can already be earned in SCS1, i.e. is the grade ladder rewarding promotion or just re-banding the same money?",
+  "score": 82
+ },
+ {
+  "name": "Senior pay bill with real-terms toggle",
+  "category": "chart",
+  "description": "Total SCS pay bill (Σ midpoint × FTE) and headcount over time, with a CPI real-terms toggle that separates genuine growth from inflation. The headline \"rising cost of senior Whitehall — and whether it's real\" chart, sliceable by department, grade and professional group.",
+  "score": 82
+ },
+ {
+  "name": "Searchable post-level explorer",
+  "category": "filter",
+  "description": "A fast client-side table of every senior post — free-text search across job titles and functions, filter by department/grade/group/period, sort by pay — so a journalist can drill from a headline straight to the underlying rows. The raw material that makes every other chart independently checkable.",
+  "score": 82
+ },
+ {
+  "name": "Above-the-PM / £150k+ watch",
+  "category": "filter",
+  "description": "Flags and counts posts whose pay band crosses the ~£150k 'higher than the Prime Minister' threshold that historically triggers Chief Secretary/PM approval, broken down by department and grade and tracked over time. This is one of the most-scrutinised, most-recognisable metrics in Civil Service pay and gives the tool an instantly credible insider hook.",
+  "score": 82
+ },
+ {
+  "name": "Real-Terms Pay Index (Nominal vs CPI)",
+  "category": "real-terms",
+  "description": "Index each grade's median pay to a base year (2011=100) in both nominal and CPI-deflated terms, so the cumulative real-terms erosion is a single readable gap between two lines. This is the flagship 'what has SCS pay actually done in real money' chart and directly answers the real-terms decline the SSRB reports on each year; needs a small baked CPI series.",
+  "score": 81
+ },
+ {
+  "name": "Pay-Bill Decomposition: Price vs Volume",
+  "category": "pay-bill",
+  "description": "Plot the total SCS pay bill (sum of midpoint*FTE) over time and decompose year-on-year change into a price effect (average pay movement) and a volume effect (headcount/FTE change). Treasury and reward teams care whether a rising bill is people getting paid more or simply more senior posts — this separates the two drivers explicitly.",
+  "score": 81
+ },
+ {
+  "name": "Grade-Mix Drift ('Grade Inflation')",
+  "category": "pay-bill",
+  "description": "Show the headcount share of each grade over time as a stacked band. If the SCS is becoming top-heavy (rising SCS2/SCS3 share), the average cost per post climbs even with zero pay awards — structural 'grade drift' is a hidden pay-bill pressure that a straight median-pay chart completely hides.",
+  "score": 81
+ },
+ {
+  "name": "Profession Mix Over Time (100% stacked area)",
+  "category": "chart",
+  "description": "A normalised stacked-area chart of senior headcount share by professional group across every 2011->2026 snapshot, so you read composition rather than absolute size: Policy's slice contracting as DDaT, Project Delivery and Digital expand. Toggle to absolute FTE or filter to one department. This is the single clearest picture of how the shape of the senior workforce shifted, and it is the necessary backdrop for every DDaT claim.",
+  "score": 81
+ },
+ {
+  "name": "Grade Differential & Compression Tracker",
+  "category": "pay-compression",
+  "description": "Track the £ gap and ratio between adjacent grade medians (SCS1:SCS2, SCS2:SCS3, SCS3:PermSec) across every snapshot 2011-2026. A narrowing ratio is textbook pay compression — the promotion incentive erodes when the step-up between grades shrinks, which is a headline SSRB affordability and retention concern.",
+  "score": 80
+ },
+ {
+  "name": "Fastest-rising league table",
+  "category": "comparison",
+  "description": "A sortable ranking (not a time-series) of every department, professional group, grade and role-class by CAGR and total %-change in median pay, headcount and pay bill between any two chosen snapshots. Surfaces the \"fastest-rising roles in Whitehall\" angle in one click and lets a reader re-sort to find their own story.",
+  "score": 80
+ },
+ {
+  "name": "Cross-filtering facet rail",
+  "category": "filter",
+  "description": "A persistent filter rail (department, grade, professional group, role-class, DDaT/policy flags, period) with multi-select chips that cross-filter every chart at once, plus a live 'N of M posts shown' counter. This is the single control surface that makes the promised 'any combination' slicing actually tractable for a user.",
+  "score": 79
+ },
+ {
+  "name": "Real-terms vs nominal toggle",
+  "category": "narrative",
+  "description": "A global switch that re-expresses every pay figure in constant 2026 pounds using a baked-in CPI deflator table, shown alongside nominal. Reframes headline 'rises' as often flat or falling in real terms - the single most important honesty lever for any pay narrative, and cheap to add as one static index.",
+  "score": 79
+ },
+ {
+  "name": "Profession Growth Leaderboard (CAGR risers & shrinkers)",
+  "category": "comparison",
+  "description": "Ranked horizontal bars showing each occupational group's senior-headcount and pay-bill CAGR over the full window, DDaT and Project Delivery at the top, Policy/Operational Delivery flat or shrinking in relative terms. Answers 'which professions did the senior civil service actually invest in' in one glance, and quantifies the DDaT-vs-everything-else growth differential without re-plotting raw earnings.",
+  "score": 78
+ },
+ {
+  "name": "Digital Pay Premium by Grade (like-for-like)",
+  "category": "comparison",
+  "description": "For each grade band (SCS1/2/3/PermSec) plot median DDaT midpoint pay against median non-DDaT (or specifically Policy) pay at that same grade, over time. Holding grade constant strips out the 'DDaT looks dear because it's senior' confound and isolates a true digital premium, showing at which grades it exists, how large it is, and whether it is widening or being competed away.",
+  "score": 78
+ },
+ {
+  "name": "Banded-Pay Uncertainty Treatment",
+  "category": "caveat",
+  "description": "Because pay is disclosed as a band rather than a point, expose the floor-to-ceiling band width and let users recompute any aggregate on floor / midpoint / ceiling to see how sensitive the answer is. It makes the banding uncertainty explicit instead of hiding it inside a single midpoint estimate.",
+  "score": 78
+ },
+ {
+  "name": "Pay compression ratio",
+  "category": "chart",
+  "description": "Tracks the Perm Sec-to-SCS1 midpoint ratio (and SCS3:SCS1) over time and by department to quantify pay compression within the senior grades — how thin the reward gap between running a directorate and a whole department has become. A well-known grievance that this dataset can put a number on.",
+  "score": 78
+ },
+ {
+  "name": "Machinery-of-government reorganisation tracker",
+  "category": "comparison",
+  "description": "Uses the department lineage/era metadata to follow senior headcount and pay bill across creations, mergers and splits (DfID→FCDO, BEIS→DSIT/DBT/DESNZ), stitching predecessor bodies into one continuous line. Tells the \"cost of restructuring Whitehall\" story that raw department names hide.",
+  "score": 77
+ },
+ {
+  "name": "Pay-distribution fan chart",
+  "category": "chart",
+  "description": "p10 / p25 / median / p75 / p90 of SCS pay drawn as a fan over time (overall or within a chosen grade or group), showing whether the top of the senior service is pulling away from the bottom. Turns a single \"average pay\" line into a distribution story about dispersion and compression.",
+  "score": 77
+ },
+ {
+  "name": "DDaT-to-Policy Capability Ratio & Crossover",
+  "category": "comparison",
+  "description": "A single dynamic ratio (senior DDaT headcount and pay bill divided by Policy's) tracked per department and government-wide, with automatic flagging of any crossover point where digital overtakes policy. Reframes the two professions as a capability race and pinpoints exactly where and when the balance tipped, a comparison metric rather than a re-plot of the two earnings lines.",
+  "score": 77
+ },
+ {
+  "name": "Sortable small-multiples sparkline grid",
+  "category": "comparison",
+  "description": "A faceted grid of mini trend lines - one tile per department (or per professional group) - sortable by latest value, growth rate or headcount, with a shared-vs-independent y-scale toggle. Lets you scan all ~25 departments in one screen instead of clicking through a single line chart repeatedly.",
+  "score": 77
+ },
+ {
+  "name": "Shareable URL permalinks",
+  "category": "export",
+  "description": "Encode the full view state (filters, metric, chart type, period, real/nominal) into the URL hash so any view is bookmarkable and linkable, with copy-view and reset-to-default buttons. Essential for a login-free static tool that people will want to cite, embed in a note, or send to a colleague.",
+  "score": 77
+ },
+ {
+  "name": "Coverage Completeness Matrix",
+  "category": "coverage",
+  "description": "A department x snapshot-period grid showing which twice-yearly returns we actually hold, colour-coded present / partial / missing, because publication is patchy and departments skip or delay periods. It stops users mistaking a gap in publication for a real fall in headcount or pay.",
+  "score": 77
+ },
+ {
+  "name": "Small-Sample / Disclosure-Control Flagging",
+  "category": "data-quality",
+  "description": "Aggregations computed over very few posts (e.g. n < 5) are annotated or greyed out, because medians and means over tiny cells are unstable and can edge toward identifying an individual. Mirrors standard statistical-disclosure-control practice used across official statistics.",
+  "score": 77
+ },
+ {
+  "name": "Machinery-of-Government lineage tracker",
+  "category": "data-quality",
+  "description": "Uses the department lineage/era field to stitch predecessor and successor bodies into one continuous series (DECC→BEIS→DESNZ, DfID+FCO→FCDO, DExEU abolition, MHCLG↔DLUHC rename) with an 'as-reported vs MoG-normalised' toggle, so a time trend doesn't falsely crater the day a department is renamed or carved up. This is the single most important credibility feature: no insider trusts an SCS time series that treats BEIS and DESNZ as unrelated.",
+  "score": 77
+ },
+ {
+  "name": "Band-width honesty view",
+  "category": "data-quality",
+  "description": "Renders pay as floor-to-ceiling range bars rather than false-precision points, shows band width by grade, and lets every aggregate be recomputed on floor / midpoint / ceiling so users see how sensitive each figure is to the banding. Being explicit that pay is a band (and that sub-£150k roles are banded) is what separates a trustworthy insider tool from a misleading one.",
+  "score": 77
+ },
+ {
+  "name": "Public-Sector Pay-Award / SSRB Uplift Overlay",
+  "category": "comparison",
+  "description": "Overlay actual SCS median pay growth against the headline annual public-sector pay award / SSRB recommended uplift (a small baked reference series). The drift between what was awarded and what the data actually moved shows drift from non-consolidated pay, grade mix and starting-salary effects — a core pay-norms benchmarking view.",
+  "score": 76
+ },
+ {
+  "name": "Grade-ladder gap view",
+  "category": "comparison",
+  "description": "Tracks the pay multiple between rungs — e.g. how many times a new SCS1's pay a Permanent Secretary earns — and whether the ladder is stretching or compressing over time. A clean inequality-within-the-elite angle that avoids needing any gender data to talk about pay gaps.",
+  "score": 76
+ },
+ {
+  "name": "Group x department heatmap with snapshot scrubber",
+  "category": "chart",
+  "description": "A matrix heatmap (professional group x department, or group x grade) coloured by headcount, median pay or pay bill for the selected snapshot, advanced with a time scrubber. Instantly reveals concentration - for example exactly where DDaT capacity sits versus where policy headcount clusters.",
+  "score": 76
+ },
+ {
+  "name": "Methodology & Definitions Page",
+  "category": "methodology",
+  "description": "A plain-English, versioned page documenting exactly how derived fields are built (role-class, DDaT flag and policy flag keyword rules), how pay bill = sum of midpoint x FTE, grade equivalences across departments, and how percentiles and CAGR are computed. Anyone can audit, cite, or challenge a definition rather than trusting an opaque label.",
+  "score": 76
+ },
+ {
+  "name": "Glass-Box Classifier Audit",
+  "category": "data-quality",
+  "description": "An interactive drill-down showing which free-text job titles were sorted into DDaT vs policy vs each role-class, including an explicit 'ambiguous / unclassified' bucket with its count. Because those flags are ours, not the government's, users can judge classifier quality and spot mis-bucketed posts before relying on the split.",
+  "score": 76
+ },
+ {
+  "name": "Contextual Caveat Banners",
+  "category": "caveat",
+  "description": "An inline warning engine that fires the moment a user builds a risky comparison — crossing a machinery-of-government boundary, comparing periods with mismatched coverage, or reading a small-N cell — explaining the specific caveat in context instead of burying it in a footnote. It puts the health warning exactly where the mistaken inference would otherwise be made.",
+  "score": 76
+ },
+ {
+  "name": "Grade pyramid & grade-drift monitor",
+  "category": "chart",
+  "description": "Shows the SCS1–SCS4 grade mix per department as an animated pyramid over 2011–2026 and surfaces grade inflation via ratios (e.g. SCS2:SCS1 creep, growth in DG-level posts). Grade drift is a live Cabinet Office concern, and a banded, twice-yearly census is exactly the source that can quantify it.",
+  "score": 76
+ },
+ {
+  "name": "Outlier & top-earner finder",
+  "category": "data-quality",
+  "description": "Flags posts paid well above the normal range for their grade/group/department (percentile or z-score against the grade band) and lists the highest-paid individual posts each snapshot with job title, function and department. A ready-made source of \"who is Whitehall's best-paid X\" and anomaly stories.",
+  "score": 75
+ },
+ {
+  "name": "Banding caveat layer & export",
+  "category": "export",
+  "description": "Surfaces the data's honesty limits — pay is a band not a salary, sub-£150k posts are banded in fixed increments, midpoints are estimates — via band-width indicators and a \"how to read this\" note, plus one-click CSV/PNG export of any filtered view. Keeps the journalism defensible and the charts reusable in an article.",
+  "score": 75
+ },
+ {
+  "name": "Departmental Digital-Maturity Ranking (bump chart)",
+  "category": "comparison",
+  "description": "Rank all ~25 departments by senior DDaT share of headcount (and DDaT share of senior pay bill) at each snapshot, drawn as a bump chart so you see who climbed and who stalled. Senior digital seniority is a proxy for how seriously a department resourced its digital function; the movers/laggards story is a strong departmental-maturity signal that the core department view does not surface.",
+  "score": 75
+ },
+ {
+  "name": "Digital at the Top Table (department x seniority matrix)",
+  "category": "comparison",
+  "description": "A heat-matrix of departments (rows) against snapshots (columns) marking whether each has a DDaT post at SCS3 and/or Permanent-Secretary-equivalent level, i.e. a real senior digital leader. Reveals which departments put a Chief Digital/Data Officer at the top of the office and when, and which never did, a sharp binary maturity indicator distinct from average-pay views.",
+  "score": 75
+ },
+ {
+  "name": "Digital Job-Title Emergence Timeline",
+  "category": "narrative",
+  "description": "Keyword-mine the free-text job titles for digital-era roles (Chief Digital Officer, Chief Data Officer, CTO, Head of Cyber/Data/AI/Platforms, SRO) and plot first-appearance and spread across departments over time. Shows capability specialising and formalising, the birth of named senior digital roles, using a field the core charts ignore, with matched titles listed for transparency.",
+  "score": 75
+ },
+ {
+  "name": "Percentile positioner",
+  "category": "comparison",
+  "description": "Enter a salary or pick a band and see where it sits within the distribution for its grade, profession, department and the SCS as a whole — respecting the banded data by placing a range rather than a false point. Lets an insider benchmark their own post or a specific role against the real senior population.",
+  "score": 75
+ },
+ {
+  "name": "Pay-Band Width Distribution",
+  "category": "data-quality",
+  "description": "Because pay is published as a floor-ceiling band, chart the distribution of band width (ceiling minus floor) per post and its trend, plus the share of posts in narrow vs wide bands. Wide bands signal managerial discretion and weaker transparency; widening over time is itself a reward-governance finding and a caveat the tool should surface honestly.",
+  "score": 74
+ },
+ {
+  "name": "Within-Grade Dispersion (P90/P10)",
+  "category": "pay-structure",
+  "description": "For each grade, track internal pay dispersion (P90/P10 ratio and interdecile £ range) across snapshots. Stretching dispersion means the grade band is being used to pay a widening spread for nominally equal roles — a key pay-equity and consistency signal that medians alone cannot reveal.",
+  "score": 74
+ },
+ {
+  "name": "Timeline event overlay",
+  "category": "narrative",
+  "description": "Overlays baked contextual markers — the 2010–13 senior-pay freeze, spending reviews, major MoG reorganisations, COVID, pay-remit changes — on any time-series so movements read against the political calendar. Turns bumps in a line into captioned, sourced story beats.",
+  "score": 74
+ },
+ {
+  "name": "DDaT Seniority-Depth Pyramid",
+  "category": "chart",
+  "description": "A grade pyramid (SCS1 -> Perm Sec) for the DDaT profession over time, contrasted with Policy's pyramid. A capability that is all SCS1 with no SCS3/PermSec presence is junior and bottom-heavy; watching DDaT's apex fill in over the decade is the clearest maturity signal that digital gained genuine top-table standing rather than just volume.",
+  "score": 74
+ },
+ {
+  "name": "Pay-band ribbons (honour the floor-to-ceiling band)",
+  "category": "chart",
+  "description": "Render each post's actual floor to ceiling GBP band as a vertical range/dumbbell or gradient bar instead of collapsing it to a midpoint, and draw aggregate views as a shaded band-of-bands. Keeps the tool honest about the disclosed data being a band (individuals under ~150k are banded), so users don't over-read spurious precision from a single midpoint line.",
+  "score": 74
+ },
+ {
+  "name": "Field-Level Completeness & Redaction Readout",
+  "category": "data-quality",
+  "description": "Per-field populated-rate indicators (share of posts carrying a pay band, professional group, FTE, reports-to link, etc.) plus counts of blanks, 'N/D', vacant and eliminated posts for the current selection. Surfaces where the underlying disclosure is thin so aggregates are not read as more complete than they are.",
+  "score": 74
+ },
+ {
+  "name": "Cite-and-Download Exports",
+  "category": "export",
+  "description": "Every view offers the underlying rows as CSV and JSON, a stable permalink encoding the exact filter state, and an auto-generated citation string carrying the data version and access date. This turns a chart into reproducible, referenceable evidence suitable for a briefing or an FOI response.",
+  "score": 74
+ },
+ {
+  "name": "Real-terms (CPI-adjusted) pay tracker",
+  "category": "narrative",
+  "description": "Deflates midpoint pay to a rebaseable reference year and plots nominal vs real-terms SCS pay across the series, making visible the sustained real-terms erosion of senior pay since 2011. This lands emotionally and factually with insiders and reframes headline pay-increase numbers that CORE shows in cash terms.",
+  "score": 74
+ },
+ {
+  "name": "Profession & Functions mix treemap",
+  "category": "filter",
+  "description": "A full professional-group breakdown (Policy, Economics, GES/GORS, GLD Legal, DDaT, Finance, Project Delivery, Commercial, Statistics, Comms, Science & Engineering, Operational Delivery) per department, with growth trajectories showing the professionalisation of the SCS. Goes well beyond CORE's DDaT-vs-policy binary to show the whole functional make-up of the senior grades.",
+  "score": 74
+ },
+ {
+  "name": "Departmental Pay-Bill & Cost-of-Management",
+  "category": "affordability",
+  "description": "Rank departments by total SCS pay bill and by cost of the senior management layer (salary cost of reports), normalised per FTE and as pay-bill-per-post. This is the affordability lens the core by-department time series doesn't give — it answers 'where is senior pay concentrated and how expensive is each department's management structure'.",
+  "score": 73
+ },
+ {
+  "name": "Pay-Band Spread as Retention-Premium Signal",
+  "category": "data-quality",
+  "description": "Chart the width of the floor->ceiling pay band (ceiling minus floor, normalised by midpoint) by profession over time. DDaT posts typically carry wider bands because of recruitment-and-retention flexibility and market rates; a widening digital spread is direct evidence of pay pressure. This turns the band structure of the data (usually discarded when we take the midpoint) into an insight in its own right.",
+  "score": 73
+ },
+ {
+  "name": "Real-Terms Profession Pay Trajectory (CPI-adjusted)",
+  "category": "chart",
+  "description": "With a baked-in CPI index, deflate median pay per profession to constant prices and plot whether senior DDaT pay actually grew in real terms while Policy and others eroded, or whether the nominal digital premium was inflation illusion. Distinguishes genuine real investment in digital capability from headline drift; depends only on adding a small static inflation array to the bundle.",
+  "score": 73
+ },
+ {
+  "name": "Senior Pay-Bill Treemap by Profession",
+  "category": "chart",
+  "description": "A snapshot treemap of the total senior wage bill (sum of midpoint x FTE) partitioned by professional group, drillable into department, with a period slider to watch DDaT's rectangle grow. Answers 'of every pound spent on senior salaries, what share now goes to digital', giving the pay-bill composition an immediate visual weight that time-series lines cannot.",
+  "score": 72
+ },
+ {
+  "name": "Distribution beeswarm + percentile fan",
+  "category": "chart",
+  "description": "A jittered strip/beeswarm of individual posts per grade or professional group for a chosen snapshot, plus a P10-P25-median-P75-P90 fan over time. Exposes spread, clustering at band edges, and whether dispersion is widening or narrowing - detail that headline medians and means completely hide.",
+  "score": 72
+ },
+ {
+  "name": "Machinery-of-government lineage ribbon",
+  "category": "data-quality",
+  "description": "A timeline ribbon showing departments splitting, merging and renaming across eras (e.g. BEIS to DBT/DESNZ/DSIT) driven by the lineage/era field, with an option to stitch predecessor bodies into one continuous series. Prevents false 'the department disappeared / doubled overnight' reads and makes long-run 2011-2026 trends legitimate.",
+  "score": 72
+ },
+ {
+  "name": "Rich hover, brush-to-zoom & tap-to-pin",
+  "category": "ux",
+  "description": "Crosshair hover tooltips (post count, floor-ceiling band, FTE, real vs nominal), drag-to-brush a date range to zoom the time axis, and tap-to-pin tooltips on touch. This is the core interaction layer and it doubles as the mobile story - tap-to-pin plus a collapsible bottom-sheet filter rail keeps the tool usable on a phone where hover doesn't exist.",
+  "score": 72
+ },
+ {
+  "name": "Source & Provenance Ledger",
+  "category": "provenance",
+  "description": "A per-snapshot manifest that links every figure back to its exact gov.uk organogram publication: source URL, publishing department, publication date, and the nominal 'as at' effective date (31 Mar / 30 Sep) versus when it was actually released. Traceability to primary source is the baseline expectation for FOI and Whitehall Monitor-style work, and it lets any number in the tool be independently checked.",
+  "score": 72
+ },
+ {
+  "name": "Reproducibility Version Stamp",
+  "category": "reproducibility",
+  "description": "A build fingerprint shown on every page: data version, total posts, departments and periods covered, build date, and a content checksum, alongside a changelog of data revisions. Ensures a figure quoted today can be reproduced from the identical underlying snapshot months later.",
+  "score": 72
+ },
+ {
+  "name": "Reorganisation carve-up ledger",
+  "category": "comparison",
+  "description": "For each MoG event, shows the before/after split of SCS headcount, pay bill and grade mix across the successor departments (e.g. how BEIS's 2023 break-up distributed its DGs and Directors into DSIT/DBT/DESNZ). Answers the question every reorg provokes internally — 'where did the senior structure and its cost actually land?'",
+  "score": 72
+ },
+ {
+  "name": "Role tracer across renames",
+  "category": "filter",
+  "description": "Fuzzy free-text search over job titles that follows a role through renames and across departments (e.g. 'Chief Scientific Adviser', 'Finance Director', 'Director of Communications'), normalising common title variants so a post's pay and grade can be traced even as its wording drifts. Solves the tracking-a-role-through-renames problem that raw title fields make impossible.",
+  "score": 72
+ },
+ {
+  "name": "Time scrubber + contextual event annotations",
+  "category": "narrative",
+  "description": "A play/scrub control that animates any snapshot-based view across 2011 to 2026, with pinned timeline markers for pay-freeze years, spending reviews and MoG reorganisations baked as static JSON. Combines temporal navigation and story context in one layer so movements have explanation, not just shape.",
+  "score": 71
+ },
+ {
+  "name": "Accessibility & export layer",
+  "category": "ux",
+  "description": "Every chart carries a 'view as table' fallback, keyboard-navigable focus on marks, ARIA labelling, a colourblind-safe palette tuned to the warm-brutalist tokens, prefers-reduced-motion handling for the scrubber, and CSV/PNG export of the current view. Makes the tool inclusive and its figures directly reusable in a report.",
+  "score": 71
+ },
+ {
+  "name": "Position-in-Band / Top-of-Band Bunching",
+  "category": "pay-progression",
+  "description": "Map where each post's midpoint sits within its grade's overall band (a compa-ratio-style 0-100% position) and highlight bunching near the ceiling. Heavy top-of-band clustering indicates stalled progression — people topped out with nowhere to go inside the band, a classic driver of flight risk the SSRB flags.",
+  "score": 70
+ },
+ {
+  "name": "Machinery-of-Government Lineage Timeline",
+  "category": "caveat",
+  "description": "A visual lineage of department merges, splits and renames (e.g. BIS to BEIS to DBT/DESNZ/DSIT) with era boundaries drawn on the time axis, plus a guard that flags any trend line crossing a reorganisation. Prevents invalid apples-to-oranges comparisons of a department whose scope no longer means the same thing.",
+  "score": 70
+ },
+ {
+  "name": "Org reporting-tree & span-of-control explorer",
+  "category": "chart",
+  "description": "Use the reports-to field and salary-cost-of-reports to draw a collapsible indented tree / icicle rooted at each Permanent Secretary, with nodes sized by span of control and cumulative cost of reports. Turns the org hierarchy latent in the CSV into a navigable structure that is unique to this dataset and impossible to get elsewhere.",
+  "score": 69
+ },
+ {
+  "name": "Real-Terms Deflator Transparency",
+  "category": "methodology",
+  "description": "When the CPI index is baked in, expose the exact ONS series used, its base period, and the year-by-year deflator table behind the nominal/real toggle, so real-terms pay figures are fully auditable rather than a black box. Contingent on adding the inflation index the brief already allows for.",
+  "score": 69
+ },
+ {
+  "name": "Interactive reports-to org tree",
+  "category": "chart",
+  "description": "Reconstructs a department's SCS hierarchy for any chosen snapshot from the reports-to field — Perm Sec → Directors General (SCS3) → Directors (SCS2) → Deputy Directors (SCS1) — as a collapsible tree with each post's pay band. Lets an insider see the actual shape of a top team at a point in time, not just aggregate counts.",
+  "score": 68
+ },
+ {
+  "name": "Hierarchy & span-of-control explorer",
+  "category": "chart",
+  "description": "Uses the reports-to links and salary-cost-of-reports to show average direct reports per senior manager, depth of management layers and which departments are most top-heavy or carry the costliest \"empires.\" Powers \"layers of management\" and empire-building investigations from the org structure itself.",
+  "score": 67
+ },
+ {
+  "name": "Spans of control & delayering explorer",
+  "category": "chart",
+  "description": "Derives direct-report counts and hierarchy depth from the reports-to graph, plotting manager-to-IC ratios, average span per grade, and single-report 'corridor' posts, tracked over time against the recurring delayering agenda. Directly serves the perennial 'too many layers, spans too narrow' debate with evidence rather than anecdote.",
+  "score": 67
+ },
+ {
+  "name": "Management Premium & Span-of-Control Gradient",
+  "category": "pay-progression",
+  "description": "Using the reports-to hierarchy and salary-cost-of-reports, compute each manager's pay relative to their direct reports and their span of control, then chart the management premium and how pay scales with team size/cost. It reframes progression as a hierarchy gradient and tests whether pay tracks managerial load or just grade.",
+  "score": 66
+ },
+ {
+  "name": "Span of Control & Cost of Reports by Profession",
+  "category": "chart",
+  "description": "Using the reports-to hierarchy and salary-cost-of-reports fields, compare the median team size and budget commanded by senior DDaT leaders against Policy and other groups. Distinguishes digital leaders who actually run large, well-funded functions from token senior hires who manage almost no one, a maturity test of whether DDaT holds real organisational weight, and it exercises hierarchy fields nothing else uses.",
+  "score": 64
+ }
+]
