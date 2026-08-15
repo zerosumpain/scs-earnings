@@ -96,7 +96,7 @@ async function copyLink() {
 function toast(msg: string) {
   const t = h('div', { style: { position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
     background: '#1a1008', color: '#ede4d4', padding: '10px 16px', borderRadius: '4px', fontFamily: 'JetBrains Mono, monospace',
-    fontSize: '12px', zIndex: '100', boxShadow: '0 6px 24px rgba(26,16,8,.3)' } }, [msg]);
+    fontSize: 'var(--fs-label-xs)', zIndex: '100', boxShadow: '0 6px 24px rgba(26,16,8,.3)' } }, [msg]);
   document.body.append(t); setTimeout(() => t.remove(), 1800);
 }
 
@@ -115,7 +115,7 @@ function footer(): HTMLElement {
   const s = ds.meta.stats;
   return h('div', { class: 'footer' }, [
     h('div', { class: 'wrap' }, [
-      h('div', { html: `<span class="brand" style="font-size:14px">scs pay</span> &nbsp; Source: ${ds.meta.source.name} via ${ds.meta.source.via}. ` +
+      h('div', { html: `<span class="brand" style="font-size:var(--fs-nav)">scs pay</span> &nbsp; Source: ${ds.meta.source.name} via ${ds.meta.source.via}. ` +
         `${num(s.posts)} senior posts across ${s.departments} departments, ${s.snapshots} snapshots (${s.dateRange[0]} → ${s.dateRange[1]}). ` +
         `Data generated ${ds.meta.generated.slice(0, 10)}. Pay is band-midpoint; see Method.` }),
     ]),
@@ -341,7 +341,7 @@ function renderCompare(main: HTMLElement) {
   const sorted = [...all.groups].sort((a, b) => (lastVal(b.values) ?? 0) - (lastVal(a.values) ?? 0));
   sorted.forEach((g, i) => {
     const card = h('div', { class: 'card', style: { padding: '12px' } }, [
-      h('div', { class: 'card-head', style: { marginBottom: '2px' } }, [h('h3', { style: { fontSize: '13px' } }, [g.label])]),
+      h('div', { class: 'card-head', style: { marginBottom: '2px' } }, [h('h3', { style: { fontSize: 'var(--fs-label)' } }, [g.label])]),
     ]);
     const host = h('div', {});
     card.append(host);

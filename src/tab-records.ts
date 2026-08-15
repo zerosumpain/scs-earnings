@@ -70,7 +70,7 @@ function recordsExplorer(ds: DataSet): HTMLElement {
 
   const controls = h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '10px' } });
   const search = Object.assign(document.createElement('input'), { type: 'search', placeholder: 'Search job title…',
-    style: 'font-family:var(--font-body);font-size:13px;padding:7px 10px;border:1.5px solid var(--card-border);background:transparent;border-radius:2px;min-width:200px;flex:1' });
+    style: 'font-family:var(--font-body);font-size:var(--fs-label);padding:7px 10px;border:1.5px solid var(--card-border);background:transparent;border-radius:2px;min-width:200px;flex:1' });
   const deptSel = select(['All departments', ...depts.map(d => deptName(ds, d))], depts);
   const gradeSel = select(['All grades', ...grades], grades);
   const ddatChip = h('button', { class: 'chip' }, ['DDaT only']);
@@ -116,7 +116,7 @@ function recordsExplorer(ds: DataSet): HTMLElement {
 
 function select(labels: string[], values: string[]): { el: HTMLSelectElement; value: () => string } {
   const el = document.createElement('select');
-  el.style.cssText = 'font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:6px 8px;border:1.5px solid var(--card-border);background:transparent;border-radius:2px;color:var(--text-secondary)';
+  el.style.cssText = 'font-family:var(--font-mono);font-size:var(--fs-label-xs);text-transform:uppercase;letter-spacing:.04em;padding:6px 8px;border:1.5px solid var(--card-border);background:transparent;border-radius:2px;color:var(--text-secondary)';
   el.append(new Option(labels[0], ''));
   values.forEach((v, i) => el.append(new Option(labels[i + 1], v)));
   return { el, value: () => el.value };
