@@ -116,10 +116,19 @@ for (const [w, h] of VIEWPORTS) {
   const tag = w >= 900 ? 'desktop' : 'mobile';
   const page = await browser.newPage({ viewport: { width: w, height: h } });
   page.on('console', (m) => {
+    if (m.type() !== 'error') return;
+    const text = m.text();
     // Google Fonts is a third party and its failures are not this app's health.
-    if (m.type() === 'error' && !/fonts\.(googleapis|gstatic)\.com/.test(m.text())) {
-      problems.push(`[${tag}] console: ${m.text().slice(0, 200)}`);
-    }
+    if (/fonts\.(googleapis|gstatic)\.com/.test(text)) return;
+    // "Failed to load resource: the server responded with a status of 404 ()"
+    // arrives with NO URL attached, so it cannot be attributed to an origin and
+    // a third-party flake is indistinguishable from a broken asset. The
+    // response and requestfailed handlers below see the same events WITH the
+    // URL and ignore other hosts properly, so this channel is dropped rather
+    // than reported as an unattributable failure. Dropping it loses nothing:
+    // anything same-origin is caught there, by URL.
+    if (/^Failed to load resource/.test(text)) return;
+    problems.push(`[${tag}] console: ${text.slice(0, 200)}`);
   });
   // A bare "Failed to load resource: 404" tells an operator nothing at 06:00 on
   // the third of the month. Record which URL, and ignore third parties, whose
