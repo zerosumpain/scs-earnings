@@ -18,7 +18,8 @@ import './style.css';
 import {
   loadData, ensureFor, series, countAbove, periodIndex, isBandedMeasure,
   lastPopulatedIdx, firstPopulatedIdx, pctChange, N_FLOOR, loadChangelog,
-  loadHighEarners, NON_SCS_GRADES,
+  loadHighEarners, loadSsrbGap, NON_SCS_GRADES,
+  type SsrbGap,
   type DataSet, type Filter, type Measure, type Dimension, type SeriesResult,
   type SeriesGroup, type ChangelogEntry, type Grain, type HighEarners,
 } from './data';
@@ -591,7 +592,12 @@ function card(o: CardOpts): HTMLElement {
   if (handle && handle.droppedLabels.length && !o.legendItems) {
     root.append(h('div', { class: 'rank-note' }, [`Not labelled on the chart for want of room: ${handle.droppedLabels.join(', ')}.`]));
   }
-  if (o.foot) append(root, o.foot);
+  // Each bare string in `foot` is its own note. Appending them as adjacent text
+  // nodes runs them together into one paragraph with no space at the join —
+  // "…already happened.The Review Body notes…".
+  if (o.foot) {
+    append(root, o.foot.map((f) => (typeof f === 'string' ? h('p', { class: 'rank-note' }, [f]) : f)));
+  }
 
   if (figure) {
     root.append(h('figcaption', { class: 'fs-figcaption' }, [
@@ -909,6 +915,7 @@ function figureFor(fig: StudyFigure): HTMLElement {
     case 'unclassifiedShare': return figUnclassified(fig, commonSub);
     case 'cpihTable': return figCpih(fig);
     case 'comparators': return figComparators(fig);
+    case 'ssrbRestatement': return figSsrbRestatement(fig);
     default: return h('div', { class: 'rank-note' }, [`No renderer for figure ${fig.no}.`]);
   }
 }
@@ -3570,4 +3577,101 @@ function orgStructureBlock(): HTMLElement {
 
 function orgLabel(id: string): string {
   return ds.meta.orgs.find((o) => o.id === id)?.name ?? id;
+}
+
+// ---------------------------------------------------------------------------
+// Fig 6.4 — the same year, published twice, with different numbers
+// ---------------------------------------------------------------------------
+//
+// This is the sharpest available answer to "how far behind the market is SCS
+// pay", and the answer is that the published figure moved by 17 percentage
+// points for an unchanged year between two consecutive reports by the same
+// body. It belongs in the trust beat rather than the finding beat, because what
+// it establishes is not a gap but the width of the uncertainty around one.
+function figSsrbRestatement(fig: StudyFigure): HTMLElement {
+  const wrap = h('div', {});
+  const slot = h('div', {}, [h('div', { class: 'rank-note' }, ['Reading the Review Body’s reports…'])]);
+  wrap.append(slot);
+  const token = renderToken;
+  loadSsrbGap(ds)
+    .then((g) => { if (token === renderToken) clear(slot).append(ssrbRestatementBlock(fig, g)); })
+    .catch((err) => {
+      if (token !== renderToken) return;
+      clear(slot).append(h('div', { class: 'rank-note' }, [`The SSRB series could not be loaded: ${String(err)}`]));
+    });
+  return wrap;
+}
+
+function ssrbRestatementBlock(fig: StudyFigure, g: SsrbGap): HTMLElement {
+  const wrap = h('div', {});
+  const rs = g.restatements.slice().sort((a, b) => b.spreadPoints - a.spreadPoints);
+  const editions = [...new Set(g.figures.map((f) => f.edition))].sort();
+
+  if (!rs.length) {
+    wrap.append(h('div', { class: 'rank-note' }, [
+      `No restatement found across the ${num(editions.length)} edition(s) whose market-gap chart could be read. `
+      + 'That is a finding in itself and it may not survive the next edition.',
+    ]));
+    return wrap;
+  }
+
+  const worst = rs[0];
+  const bandName = (b: string) => b.replace(/\b\w/g, (c) => c.toUpperCase());
+
+  wrap.append(card({
+    variant: 'figure', figNo: fig.no, caption: fig.caption,
+    title: 'The gap, as published twice',
+    sub: `Senior Salaries Review Body, ${editions.join(' and ')} reports · per cent below the comparator median · source [9]`,
+    table: fsTable(
+      [{ label: 'Pay band' }, { label: 'Against' }, { label: 'Year', num: true },
+        { label: 'As published' }, { label: 'Edition' }, { label: 'Figure' }, { label: 'Page', num: true }],
+      rs.flatMap((x) => x.readings.map((rd) => ({
+        cells: [bandName(x.band), bandName(x.sector), String(x.year), `${rd.pct}%`,
+          `${rd.edition} report`, `Figure ${rd.figureNo}`, String(rd.page)],
+      }))),
+    ),
+    build: (host) => {
+      // A dumbbell: one row per restated quantity, a rule between the two
+      // published readings. The distance IS the finding, so it is what the mark
+      // encodes — not the level, which is what a bar would say.
+      const all = rs.flatMap((x) => x.readings.map((rd) => rd.pct));
+      const lo = Math.min(...all, 0), hi = Math.max(...all, 0);
+      const grid = h('div', { class: 'restate' });
+      for (const x of rs) {
+        const sorted = x.readings.slice().sort((a, b) => a.edition - b.edition);
+        const first = sorted[0], last = sorted[sorted.length - 1];
+        const at = (v: number) => ((v - lo) / (hi - lo || 1)) * 100;
+        const a = Math.min(at(first.pct), at(last.pct));
+        const b = Math.max(at(first.pct), at(last.pct));
+        grid.append(h('div', { class: 'restate-row' }, [
+          h('span', { class: 'metric-label' }, [`${bandName(x.band)} v ${x.sector} · ${x.year}`]),
+          h('div', { class: 'restate-track' }, [
+            h('span', { class: 'restate-link', style: { left: `${a}%`, width: `${Math.max(1, b - a)}%` } }),
+            h('span', { class: 'restate-dot old', style: { left: `${at(first.pct)}%` }, title: `${first.pct}% — ${first.edition} report, Figure ${first.figureNo}, page ${first.page}` }),
+            h('span', { class: 'restate-dot new', style: { left: `${at(last.pct)}%` }, title: `${last.pct}% — ${last.edition} report, Figure ${last.figureNo}, page ${last.page}` }),
+          ]),
+          h('span', { class: 'num' }, [`${first.pct}% → ${last.pct}%`]),
+        ]));
+      }
+      grid.append(h('div', { class: 'restate-key' }, [
+        h('span', {}, [h('span', { class: 'restate-dot old' }), ` as first published`]),
+        h('span', {}, [h('span', { class: 'restate-dot new' }), ` as restated`]),
+      ]));
+      host.append(grid);
+      return null;
+    },
+    foot: [
+      `The largest restatement is ${bandName(worst.band)} against the ${worst.sector} sector for ${worst.year}: `
+      + `${worst.readings[0].pct}% in the ${worst.readings[0].edition} report and `
+      + `${worst.readings[worst.readings.length - 1].pct}% in the ${worst.readings[worst.readings.length - 1].edition} report, `
+      + `a movement of ${num(worst.spreadPoints)} percentage points in a year that had already happened.`,
+      'The Review Body notes that its benchmarking supplier changed its civil service reference levels in October 2023, '
+      + 'which explains why a restatement occurred but not which reading is right — both remain published, and neither '
+      + 'is withdrawn.',
+      'The figure carrying this comparison is numbered differently in every edition, and the 2026 report drops it '
+      + `entirely: ${g.editionsWithoutTheFigure.includes(2026) ? 'the Review Body says it intends to return to the analysis in a future report' : 'see the editions list'}. `
+      + 'A series that ends is not a gap that closed.',
+    ],
+  }));
+  return wrap;
 }

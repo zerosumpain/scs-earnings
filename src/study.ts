@@ -220,6 +220,15 @@ const SOURCES: Source[] = [
     kind: 'technical',
     asOf: 'scheme year 2025/26',
   },
+  {
+    n: 9,
+    org: 'Senior Salaries Review Body',
+    what: 'the annual reports, 1994 to 2026. The market-gap figures are read from the published charts by scripts/ssrb-corpus.mjs rather than transcribed, so each value carries the edition and page it came from.',
+    url: 'https://www.gov.uk/government/collections/ssrb-annual-reports',
+    kind: 'regulator',
+    asOf: 'annual, published May to July',
+    caveat: 'The underlying series is described by the publisher as unpublished Cabinet Office data, so the percentages can be cited but the numbers behind them cannot be checked. The figure number moves between editions and the same year has been restated between them.',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -778,6 +787,14 @@ export const study: Study = {
           unit: '£ per year, base pay, rounded to £1,000',
           cites: [4, 5, 8],
           data: 'comparators',
+        },
+        {
+          no: '6.4',
+          caption: 'The same quantity, published twice by the same body, two years apart. The Review Body\'s own chart put the director gap against the private sector at 65 per cent in its 2024 report and 48 per cent in its 2025 report — for the identical year. The restatement is larger than any year-on-year movement the series is used to describe, which means the number you quote depends mostly on which report you happened to open [9].',
+          chart: 'A1',
+          unit: 'per cent difference from the comparator median',
+          cites: [9],
+          data: 'ssrbRestatement',
         },
       ],
       soWhat:

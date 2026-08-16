@@ -478,6 +478,7 @@ export function needsProf(filter: Filter, dimension: Dimension): boolean {
 export const loadChangelog = (ds: DataSet) => fetchJson<ChangelogEntry[]>(ds.base + 'changelog.json');
 export const loadHighEarners = (ds: DataSet) => fetchJson<HighEarners>(ds.base + 'highearners.json');
 export const loadUkgwa = (ds: DataSet) => fetchJson<Ukgwa>(ds.base + 'ukgwa.json');
+export const loadSsrbGap = (ds: DataSet) => fetchJson<SsrbGap>(ds.base + 'ssrb-gap.json');
 
 export interface ChangelogEntry {
   run: string; gitSha: string; scope: Scope;
@@ -501,6 +502,26 @@ export interface HighEarners {
   series: unknown[]; gaps: unknown[]; breaks: unknown[]; attachments: unknown[];
   rows: { n: number; cols: string[]; data: Record<string, (number | null)[]> };
   stats: unknown; warnings: string[];
+}
+/** scripts/ssrb-corpus.mjs — the market-gap charts, parsed from the PDFs. */
+export interface SsrbGapReading { edition: number; page: number; figureNo: string; pct: number }
+export interface SsrbRestatement {
+  band: string; sector: string; year: number;
+  readings: SsrbGapReading[];
+  spreadPoints: number;
+}
+export interface SsrbGap {
+  schema: number; purpose: string; licence: string; caveats: string[];
+  editions: { year: number; title: string; page: string; pdf: string; pages: number }[];
+  editionsWithoutTheFigure: number[];
+  restatements: SsrbRestatement[];
+  figures: {
+    edition: number; page: number; figureNo: string; caption: string;
+    source: string | null; note: string | null; breakAt: number;
+    points: { series: string; year: number; pct: number }[];
+    unattributed: unknown[]; complete: boolean;
+    provenance: { pdf: string | null; publicUpdatedAt: string | null; extraction: string; blockSha: string };
+  }[];
 }
 export interface Ukgwa {
   schema: number; generated: string; purpose: string; source: unknown;
