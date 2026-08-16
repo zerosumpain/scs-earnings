@@ -346,7 +346,12 @@ function renderCompare(main: HTMLElement) {
     const host = h('div', {});
     card.append(host);
     grid.append(card);
-    setTimeout(() => lineChart(host, { labels: all.periods, series: [{ key: g.key, label: g.label, color: colorFor(i % PALETTE.length), values: g.values }], yFormat: fmt, height: 130 }), 0);
+    // One shared y-domain across every panel — the copy above promises "the same
+    // axis everywhere", and until this was passed each panel silently rescaled to
+    // its own data (a £20k window drawn beside a £160k one, looking identical).
+    // Colour carries no information here: each panel holds exactly one series and
+    // the panel title is the identity, so every panel draws in one ink.
+    setTimeout(() => lineChart(host, { labels: all.periods, series: [{ key: g.key, label: g.label, color: 'var(--accent)', values: g.values }], yFormat: fmt, height: 130, yDomain: [lo, hi] }), 0);
   });
   main.append(grid);
 }

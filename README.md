@@ -23,22 +23,45 @@ Live: `https://strangeramblings.com/projects/scs-earnings/`
 ## Data pipeline
 
 ```bash
+npm run ukgwa       # recover the 2010-2012 files whose origin host is gone, from
+                    # the UK Government Web Archive, into .cache/ — run BEFORE ingest.
+                    # Cheap and idempotent; see docs/DATA-CONTRACT.md section 11.
 npm run ingest      # gather all senior organogram CSVs -> public/data/*.json
 npm test            # unit assertions for the parser/classifier
+
+node scripts/highearners.mjs --check   # cheap; only do a full run when it says CHANGED
+npm run benchmarks  # ASHE / ACSES / SSRB / SCS pay bands -> benchmarks.json
+node scripts/itjobswatch.mjs           # advertised-salary layer, CC BY-NC-SA, quarantined
+
+npm run datadiff -- --require-full     # regression guard. rc>=2 blocks; rc=1 is advisory
+npm run check:budgets                  # payload size gate
+npm run check:fonts                    # 12px floor / 16px typed-field floor
+npm run validate:palette               # chart colour gate
+
 npm run dev         # local dev server
 npm run build       # typecheck + production bundle
 node scripts/smoke.mjs   # headless smoke test across all tabs
 ```
 
+After a full-scope ingest, promote the diff baseline and commit it with the data:
+`npm run datadiff -- --promote` writes `data/baseline.json`.
+
 `scripts/ingest.mjs` queries the data.gov.uk CKAN API for each department's organogram
 dataset, downloads every senior CSV (cached in `.cache/`), normalises each post, and
 aggregates into a compact **additive histogram cube** at grain
-`(period × department × profession × grade × ddat-flag × policy-flag)` — which supports
-any client-side filter plus approximate medians/percentiles, in ~900 KB of JSON.
+`(reference date × organisation × grade × profession × ddat-flag × policy-flag × pay band)`
+— which supports any client-side filter plus approximate medians and percentiles. Every
+published post row is also emitted per organisation in `public/data/posts/<orgId>.json`.
+The full field-by-field interface is `docs/DATA-CONTRACT.md`.
 
 ## Data source & honesty
 
-Pay is disclosed as a **band** (£5k bands below £150k, individual figures above); every
-figure is the band midpoint unless switched. Snapshots are bucketed to half-year periods
-for cross-department alignment. Scope is the main ministerial departments (not ALBs). See
-the **Method** tab for the full caveats. Not a government publication.
+Pay is disclosed as a **`(floor, ceiling)` band** £5,000 wide throughout — including
+above £150,000, where only 105 of 2,602 rows are an exact figure. **No midpoint is
+computed anywhere**: the cube carries the two band edges, and a figure derived from it is
+a range. Around two thirds of published senior posts have their pay withheld, and
+withholding is grade-dependent, so every published row is kept and the disclosure rate
+travels with any pay figure. Snapshots are keyed on the publisher's own reference date,
+never bucketed into half-years. Tier A is the ministerial-department spine; Tier B is the
+wider senior public sector and is never summed into an "SCS" figure. See the **Method**
+tab for the full caveats. Not a government publication.

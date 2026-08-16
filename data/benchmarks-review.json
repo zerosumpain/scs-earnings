@@ -1,0 +1,227 @@
+{
+ "schema": 1,
+ "note": "Approved readings for every PDF-derived figure. A changed checksum parks the new reading in pending and leaves these alone until a human re-approves with --approve.",
+ "approved": {
+  "ssrb-evidence-median-by-payband": {
+   "docUrl": "https://assets.publishing.service.gov.uk/media/69034f2892779f89baa51fe6/2025_30_10_Government_Evidence_to_the_SSRB__2026_27__.pdf",
+   "blockSha": "5d3f0ff2b1d590e73a4bb9499e34b74a681c0c381bf946ee49de137798f61390",
+   "approvedOn": "2026-08-15",
+   "approvedBy": "scripts/benchmarks.mjs --approve",
+   "approvalMeans": "A person compared this extraction against the published table before running --approve. It is not a claim that the extraction is self-validating.",
+   "values": [
+    {
+     "year": 2010,
+     "deputyDirector": 73400,
+     "deputyDirector1A": 84100,
+     "director": 100000,
+     "directorGeneral": 133000
+    },
+    {
+     "year": 2011,
+     "deputyDirector": 73100,
+     "deputyDirector1A": 83200,
+     "director": 100000,
+     "directorGeneral": 133000
+    },
+    {
+     "year": 2012,
+     "deputyDirector": 73000,
+     "deputyDirector1A": 77800,
+     "director": 97900,
+     "directorGeneral": 131000
+    },
+    {
+     "year": 2013,
+     "deputyDirector": 73000,
+     "deputyDirector1A": 77200,
+     "director": 96900,
+     "directorGeneral": 132500
+    },
+    {
+     "year": 2014,
+     "deputyDirector": 74000,
+     "deputyDirector1A": 78500,
+     "director": 96000,
+     "directorGeneral": 133500
+    },
+    {
+     "year": 2015,
+     "deputyDirector": 74800,
+     "deputyDirector1A": 78500,
+     "director": 96000,
+     "directorGeneral": 132600
+    },
+    {
+     "year": 2016,
+     "deputyDirector": 75500,
+     "deputyDirector1A": 78700,
+     "director": 98800,
+     "directorGeneral": 135900
+    },
+    {
+     "year": 2017,
+     "deputyDirector": 75900,
+     "deputyDirector1A": 81200,
+     "director": 99900,
+     "directorGeneral": 134000
+    },
+    {
+     "year": 2018,
+     "deputyDirector": 76200,
+     "deputyDirector1A": 80000,
+     "director": 99800,
+     "directorGeneral": 134500
+    },
+    {
+     "year": 2019,
+     "deputyDirector": 76700,
+     "deputyDirector1A": 80000,
+     "director": 102500,
+     "directorGeneral": 137300
+    },
+    {
+     "year": 2020,
+     "deputyDirector": 78500,
+     "deputyDirector1A": 84700,
+     "director": 103500,
+     "directorGeneral": 138600
+    },
+    {
+     "year": 2021,
+     "deputyDirector": 77900,
+     "deputyDirector1A": 84700,
+     "director": 102900,
+     "directorGeneral": 135800
+    },
+    {
+     "year": 2022,
+     "deputyDirector": 79300,
+     "deputyDirector1A": 82800,
+     "director": 103500,
+     "directorGeneral": 138500
+    },
+    {
+     "year": 2023,
+     "deputyDirector": 84500,
+     "deputyDirector1A": 87400,
+     "director": 109600,
+     "directorGeneral": 145600
+    },
+    {
+     "year": 2024,
+     "deputyDirector": 88500,
+     "deputyDirector1A": null,
+     "director": 114200,
+     "directorGeneral": 152600
+    }
+   ]
+  },
+  "ssrb-evidence-market-comparison": {
+   "docUrl": "https://assets.publishing.service.gov.uk/media/69034f2892779f89baa51fe6/2025_30_10_Government_Evidence_to_the_SSRB__2026_27__.pdf",
+   "blockSha": "8c433ea5b93a599089de90b0d6ab71479c0ff2a7c915d48f914f397bb6b5ecfe",
+   "approvedOn": "2026-08-15",
+   "approvedBy": "scripts/benchmarks.mjs --approve",
+   "approvalMeans": "A person compared this extraction against the published table before running --approve. It is not a claim that the extraction is self-validating.",
+   "values": {
+    "civilService": {
+     "deputyDirector": 88500,
+     "deputyDirector1A": null,
+     "director": 114200,
+     "directorGeneral": 152600
+    },
+    "public": {
+     "deputyDirector": 99900,
+     "deputyDirector1A": null,
+     "director": 160400,
+     "directorGeneral": null
+    },
+    "private": {
+     "deputyDirector": 133200,
+     "deputyDirector1A": null,
+     "director": 222900,
+     "directorGeneral": null
+    }
+   }
+  },
+  "ssrb-report-band-medians": {
+   "docUrl": "https://assets.publishing.service.gov.uk/media/6a0f2a5a0a1a96d9418d2799/Senior_Salaries_Review_Body_Report_2026.pdf",
+   "blockSha": "044a1c8b46abafec360f136e894163d6591bfb0ab341d755f477c608639a2c1d",
+   "approvedOn": "2026-08-15",
+   "approvedBy": "scripts/benchmarks.mjs --approve",
+   "approvalMeans": "A person compared this extraction against the published table before running --approve. It is not a claim that the extraction is self-validating.",
+   "values": {
+    "scs3": 156500,
+    "scs2": 117600,
+    "scs1": 90800,
+    "asOfYear": "2025",
+    "note": "Bands are assigned by rank: SCS 3 above SCS 2 above SCS 1. The chart prints the values but not which series each belongs to."
+   }
+  },
+  "scs-pay-bands-2026": {
+   "docUrl": "https://assets.publishing.service.gov.uk/media/6a103a8e0026f30a6d421c96/2026-05-22_SCS_Pay_2026_27_Practitioner_Guide.pdf",
+   "blockSha": "ca283f8ec6484faa704cf29f8a08705ea1048b68b6a0b79de14046b1c6565155",
+   "approvedOn": "2026-08-15",
+   "approvedBy": "scripts/benchmarks.mjs --approve",
+   "approvalMeans": "A person compared this extraction against the published table before running --approve. It is not a claim that the extraction is self-validating.",
+   "values": {
+    "effectiveFrom": "2026-04-01",
+    "payYear": "2026/27",
+    "bands": [
+     {
+      "band": "1",
+      "min": 86000,
+      "max": 117800
+     },
+     {
+      "band": "1A",
+      "min": 86000,
+      "max": 128900
+     },
+     {
+      "band": "2",
+      "min": 105000,
+      "max": 162500
+     },
+     {
+      "band": "3",
+      "min": 135000,
+      "max": 208100
+     }
+    ]
+   }
+  },
+  "scs-pay-bands-2025": {
+   "docUrl": "https://assets.publishing.service.gov.uk/media/695cdad6b5c46330350ed97e/REVISED_V2_-_SCS_pay_2025_Practitioner_Guide_.pdf",
+   "blockSha": "25c20bbfa623a71750a1e88e2a15e08cb633f675c0606cea79c86731d21ffa8d",
+   "approvedOn": "2026-08-15",
+   "approvedBy": "scripts/benchmarks.mjs --approve",
+   "approvalMeans": "A person compared this extraction against the published table before running --approve. It is not a claim that the extraction is self-validating.",
+   "values": {
+    "effectiveFrom": "2025-04-01",
+    "payYear": "2025/26",
+    "bands": [
+     {
+      "band": "1",
+      "min": 81000,
+      "max": 117800
+     },
+     {
+      "band": "1A",
+      "min": 81000,
+      "max": 128900
+     },
+     {
+      "band": "2",
+      "min": 100000,
+      "max": 162500
+     },
+     {
+      "band": "3",
+      "min": 130000,
+      "max": 208100
+     }
+    ]
+   }
+  }
+ }
+}

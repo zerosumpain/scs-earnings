@@ -4,3 +4,8 @@ dist/
 *.log
 ingest.log
 .DS_Store
+
+# Smoke-test screenshots: rewritten on every run, so a monthly auto-commit
+# would churn ~1.6MB of binary diff into history forever.
+shots/
+shot-*.png

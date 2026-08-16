@@ -10,7 +10,13 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "ingest": "node scripts/ingest.mjs",
-    "test": "node scripts/test-lib.mjs"
+    "ukgwa": "node scripts/ukgwa.mjs",
+    "benchmarks": "node scripts/benchmarks.mjs",
+    "test": "node scripts/test-lib.mjs",
+    "datadiff": "node scripts/datadiff.mjs",
+    "check:budgets": "node scripts/check-budgets.mjs",
+    "check:fonts": "node scripts/check-font-sizes.mjs",
+    "validate:palette": "node scripts/validate-palette.mjs"
   },
   "dependencies": {
     "lz-string": "^1.5.0"

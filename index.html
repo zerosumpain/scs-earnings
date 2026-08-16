@@ -5,10 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Senior Civil Servant Earnings — an interactive explorer</title>
   <meta name="description" content="Explore UK Senior Civil Service pay over time by department, profession, grade, and DDaT vs policy — built on gov.uk organogram transparency data, 2010–2026." />
+
+  <!-- Single light theme: the bundle ships one warm palette and no dark blocks,
+       so declare it rather than let the browser auto-invert form controls.
+       theme-color is --surface-shell (#e9dfcd), the shell surface. -->
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#e9dfcd" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Senior Civil Servant Earnings" />
+  <meta property="og:description" content="Fifteen years of published pay for the most senior posts in UK government departments, from gov.uk transparency data." />
+  <meta property="og:locale" content="en_GB" />
+  <meta name="twitter:card" content="summary" />
+
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <!-- Only the weights the stylesheet actually asks for.
+       Archivo Black 900 (display) · DM Mono 400/500 (brand mark) ·
+       DM Sans 400/500/700 + italic 400 (body) · JetBrains Mono 400/500 (labels) ·
+       Fraunces upright 400 and 600, italic 400 — the reading serif, kept
+       because the field-study layer genuinely uses it: .fs-h1 / .fs-numeral /
+       .fs-dropcap are 600, and .fs-question / .fs-aside / .fs-figcaption /
+       .fs-pull are italic 400. Upright 500 was requested and never used, so it
+       is dropped. -->
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./src/style.css" />
 </head>
 <body>

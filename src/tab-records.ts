@@ -52,7 +52,11 @@ export function renderRecords(main: HTMLElement, ds: DataSet, state?: AppState) 
   }).filter(Boolean) as { key: string; label: string; value: number }[];
   movers.sort((a, b) => b.value - a.value);
   const moverHost = h('div', {});
-  barChart(moverHost, { rows: movers.map(m => ({ key: m.key, label: deptName(ds, m.key), value: m.value, color: m.value >= 0 ? '#5b8a2a' : '#b23a2a' })), valueFormat: (n) => pct(n, 1) + '/yr' });
+  // Diverging: bars anchor at zero and negatives run left, so bar LENGTH agrees
+  // with the number. Without it a -4.9% drew longer than the +2.1% leader and
+  // only colour distinguished them — and that green/red pair fails colour-vision
+  // separation, so for some readers nothing distinguished them at all.
+  barChart(moverHost, { diverging: true, rows: movers.map(m => ({ key: m.key, label: deptName(ds, m.key), value: m.value, color: m.value >= 0 ? 'var(--accent)' : 'var(--trend-down)' })), valueFormat: (n) => pct(n, 1) + '/yr' });
   canvas.append(card('Fastest-rising departments', `Compound annual growth in median senior pay, first to latest snapshot (${s.realTerms ? 'real terms' : 'nominal'})`, moverHost));
 
   // ---- 3. Searchable / sortable top-earners explorer ----

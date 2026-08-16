@@ -92,7 +92,9 @@ export function renderProfessions(main: HTMLElement, ds: DataSet, ctx: Ctx) {
     return gr == null ? null : { key: g.key, label: g.label, value: gr };
   }).filter(Boolean) as { key: string; label: string; value: number }[];
   lbRows.sort((a, b) => b.value - a.value);
-  barChart(lbHost, { rows: lbRows.map((r, i) => ({ ...r, color: r.value >= 0 ? '#5b8a2a' : '#b23a2a' })), valueFormat: (n) => pct(n, 1) + '/yr' });
+  // See tab-records.ts: diverging so bar length agrees with the sign, and the
+  // warm-family down tint rather than a red/green pair that fails CVD.
+  barChart(lbHost, { diverging: true, rows: lbRows.map((r) => ({ ...r, color: r.value >= 0 ? 'var(--accent)' : 'var(--trend-down)' })), valueFormat: (n) => pct(n, 1) + '/yr' });
   canvas.append(card('Profession pay growth', `Compound annual growth in median senior pay, first to latest snapshot (${ctx.state.realTerms ? 'real terms' : 'nominal'})`, lbHost));
 
   // ---- 5. Digital job-title emergence timeline ----
