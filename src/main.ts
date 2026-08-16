@@ -2390,6 +2390,7 @@ function instrument(): HTMLElement {
     h('span', { class: 'fs-kicker' }, [ins.name]),
     h('span', { class: 'fs-live' }, [h('span', { class: 'dot' }), `${measureLabel(measure)} · by ${dimensionLabel(state.dimension).toLowerCase()} · ${state.realTerms ? `${facts.yearTo} £` : 'cash'} · ${basisLabel(state.basis).toLowerCase()}`]),
     h('span', { class: 'spacer' }),
+    fullscreenButton(root),
     h('button', { class: 'share-btn', type: 'button', onClick: copyLink }, ['Share this state']),
   ]));
 
@@ -2540,6 +2541,65 @@ function instrument(): HTMLElement {
   }
 
   return append(h('div', { class: 'fs-instrument-wrap' }), [root, lim.notes]);
+}
+
+// Expand the instrument to the whole viewport. The in-page instrument is
+// clamped to the viewport minus the two sticky bars so the transport never
+// hides behind the tab strip, which leaves the lever rail about 320px short of
+// its own content at the commonest desktop heights. Full screen gives the rail
+// the height it needs; the class does the rest in CSS.
+//
+// Uses the Fullscreen API where it exists and falls back to a fixed-position
+// class, because the API is refused outside a user gesture in some browsers and
+// the fallback is indistinguishable to the reader.
+function fullscreenButton(root: HTMLElement): HTMLElement {
+  const btn = h('button', {
+    class: 'share-btn fs-expand',
+    type: 'button',
+    'aria-pressed': 'false',
+    title: 'Expand the instrument to fill the screen (F, or Escape to leave)',
+  }, ['Full screen']) as HTMLButtonElement;
+
+  const isOpen = () => document.fullscreenElement === root || root.classList.contains('is-fullscreen');
+
+  const paint = () => {
+    const open = isOpen();
+    btn.textContent = open ? 'Exit full screen' : 'Full screen';
+    btn.setAttribute('aria-pressed', open ? 'true' : 'false');
+    // The charts are sized by a ResizeObserver on the SVG, so entering and
+    // leaving full screen redraws them without any explicit call. Firing a
+    // resize keeps browsers that batch the transition in step.
+    requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+  };
+
+  const enter = async () => {
+    root.classList.add('is-fullscreen');
+    document.body.classList.add('has-fullscreen-instrument');
+    try { if (root.requestFullscreen) await root.requestFullscreen(); } catch { /* class fallback stands */ }
+    paint();
+  };
+  const leave = async () => {
+    root.classList.remove('is-fullscreen');
+    document.body.classList.remove('has-fullscreen-instrument');
+    try { if (document.fullscreenElement) await document.exitFullscreen(); } catch { /* already out */ }
+    paint();
+  };
+
+  btn.addEventListener('click', () => { isOpen() ? leave() : enter(); });
+  // Escape leaves the CSS fallback too — the browser only handles it for the
+  // real Fullscreen API, and a reader who cannot get out is trapped.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && root.classList.contains('is-fullscreen')) leave();
+    else if (e.key === 'f' && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target as HTMLElement)?.tagName || '')) {
+      if (root.isConnected) { isOpen() ? leave() : enter(); }
+    }
+  });
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) root.classList.remove('is-fullscreen');
+    document.body.classList.toggle('has-fullscreen-instrument', root.classList.contains('is-fullscreen'));
+    paint();
+  });
+  return btn;
 }
 
 function readoutHud(res: SeriesResult, disp: Display, banded: boolean, fmt: (n: number | null) => string): HTMLElement {
@@ -2758,6 +2818,22 @@ function leverHud(): HTMLElement {
     }, [label]))));
 
   body.append(lever('scope', 'Scope', scopeCurrent, scope));
+
+  // Say so when levers remain below the fold. A scrollbar alone is not an
+  // affordance: two of five levers used to sit under one, unnoticed.
+  const markOverflow = () => {
+    if (!body.isConnected) return;
+    hud.dataset.overflowing = body.scrollHeight > body.clientHeight + 2 ? '1' : '0';
+  };
+  requestAnimationFrame(markOverflow);
+  if (typeof ResizeObserver === 'function') {
+    const ro = new ResizeObserver(() => { if (body.isConnected) markOverflow(); else ro.disconnect(); });
+    ro.observe(body);
+  }
+  body.addEventListener('scroll', () => {
+    const atEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - 2;
+    hud.dataset.overflowing = atEnd ? '0' : '1';
+  });
   return hud;
 }
 
@@ -2872,8 +2948,8 @@ function ledgerTable(groups: PostGroup[]): HTMLElement {
 
   const controls = h('div', { class: 'beat-controls' });
   const search = h('input', {
-    class: 'beat-field', type: 'search', placeholder: 'Search title, unit or organisation…',
-    'aria-label': 'Search job title, unit or organisation', style: { flex: '1 1 220px' },
+    class: 'beat-field', type: 'search', placeholder: 'Search a name, job title, unit or organisation…',
+    'aria-label': 'Search by post-holder name, job title, unit or organisation', style: { flex: '1 1 220px' },
   }) as HTMLInputElement;
   const orgSel = h('select', { class: 'beat-field', 'aria-label': 'Organisation' }) as HTMLSelectElement;
   orgSel.append(new Option('All organisations', ''));
@@ -2913,6 +2989,7 @@ function ledgerTable(groups: PostGroup[]): HTMLElement {
     const table = h('table', { class: 'records-table' });
     table.append(h('thead', {}, [h('tr', {}, [
       h('th', { scope: 'col' }, ['Job title']),
+      h('th', { scope: 'col' }, ['Post-holder']),
       h('th', { scope: 'col' }, ['Organisation']),
       h('th', { scope: 'col' }, ['Grade']),
       h('th', { scope: 'col' }, ['Profession']),
@@ -2934,6 +3011,17 @@ function ledgerTable(groups: PostGroup[]): HTMLElement {
           h('div', {}, [g.title || '—', ' ', flags]),
           ...(g.unit ? [h('div', { class: 'metric-delta' }, [g.unit])] : []),
         ]),
+        // A post outlives the people in it: show who holds it now, and say how
+        // many held it before rather than implying the current holder is the
+        // only one the record knows about.
+        h('td', {}, [
+          h('div', {}, [g.holder ?? h('span', { class: 'metric-delta' }, [
+            g.last.status === 'vacant' ? 'vacant' : g.last.status === 'eliminated' ? 'post eliminated' : 'name not published',
+          ])]),
+          ...(g.holders.length > 1
+            ? [h('div', { class: 'metric-delta', title: g.holders.join(' → ') }, [`${num(g.holders.length)} holders since ${g.first.date.slice(0, 4)}`])]
+            : []),
+        ]),
         h('td', {}, [g.suborg && g.suborg !== orgName(g.org) ? `${orgName(g.org)} — ${g.suborg}` : orgName(g.org)]),
         h('td', {}, [g.grade + (g.variant ? ` · ${g.variant}` : '')]),
         h('td', {}, [g.profession]),
@@ -2951,7 +3039,10 @@ function ledgerTable(groups: PostGroup[]): HTMLElement {
     clear(foot).append(h('span', {}, [
       `${num(shown.length)} of ${num(matched.length)} matching posts, from ${num(groups.length)} loaded. `
       + 'Bands print exactly as the department published them — nothing in this table is rounded. '
-      + 'Posts sharing a floor are tied, not ranked.',
+      + 'Posts sharing a floor are tied, not ranked. '
+      + 'Post-holder names are published by the department in the same release as the pay band, '
+      + 'under the Open Government Licence; about a quarter of senior posts are filed with one. '
+      + 'A blank name is the department declining to publish it, not an empty post.',
     ]));
     if (shown.length < matched.length) {
       const more = h('button', { class: 'chip', type: 'button', style: { marginTop: '10px' } }, ['Show more']);

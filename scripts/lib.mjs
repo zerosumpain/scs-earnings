@@ -240,9 +240,15 @@ export function resolveReferenceDate(url, packageName, packageTitle, uploadDate,
 }
 
 // ---- post status, derived from the Name column ----
-// The status is all the disclosure analysis needs. The name itself is never
-// returned, stored or emitted: gov.uk publishes it lawfully under OGL, but a
-// pay study does not need a roll-call of individuals to make its point.
+// The status drives the disclosure analysis. The name itself is ALSO carried
+// now (John's decision, 2026-08-16) so a reader can search for an individual
+// post-holder. gov.uk publishes these names lawfully under OGL as part of the
+// same transparency release as the pay band.
+//
+// `postName()` returns the name ONLY when the cell is a real name — every
+// placeholder the status machine recognises ("N/D", "Vacant", "Redacted",
+// "N/A", "Eliminated") returns null, so a placeholder can never be rendered or
+// indexed as if it were a person.
 export const POST_STATUSES = [
   'filled-named', 'filled-undisclosed', 'vacant', 'eliminated', 'redacted', 'blank',
 ];
@@ -259,6 +265,16 @@ export function postStatusFromName(name) {
     return 'filled-undisclosed';
   }
   return 'filled-named';
+}
+
+// The published post-holder's name, or null. Only ever non-null when the status
+// machine above agrees the cell holds a real name, so the two can never
+// disagree. Whitespace is collapsed and the string is capped, because these
+// cells occasionally carry a name plus a job title plus a phone number.
+export function postName(name) {
+  if (postStatusFromName(name) !== 'filled-named') return null;
+  const s = String(name).replace(/\s+/g, ' ').trim();
+  return s.length > 80 ? s.slice(0, 80) : s;
 }
 
 // ---- grade classification ----
@@ -567,6 +583,7 @@ export function parsePosts(text) {
     if (validApplied && isFlaggedInvalid(cell(r, cValid))) { invalidDropped++; continue; }
 
     const status = postStatusFromName(cell(r, cName));
+    const holder = postName(cell(r, cName));
     const title = cell(r, cTitle);
     const grade = normGrade(cell(r, cGrade));
     const prof = normProfession(cell(r, cGroup), title);
@@ -610,7 +627,7 @@ export function parsePosts(text) {
     const cost = parseMoney(cell(r, cCost));
 
     posts.push({
-      pur, ordinal, status,
+      pur, ordinal, status, holder,
       title: title.slice(0, 160),
       unit: cell(r, cUnit).slice(0, 120),
       organisation: cell(r, cOrg).slice(0, 120),

@@ -101,6 +101,15 @@ Code: MIT. The underlying transparency data is Crown copyright, published under 
 in its own file for that reason.
 
 **This is not a government publication**, and it is not affiliated with any department.
-Individual names appear in the source CSVs and are deliberately **never** carried into this
-repository or its output — the pipeline asserts on it and fails the run if one leaks. The
-analysis needs to know whether a post is named, not who holds it.
+
+**Post-holder names are included.** Departments publish them under the Open Government
+Licence in the same transparency release as the pay band, and about a quarter of senior
+posts (44,272 of 185,926 rows) are filed with one. They are carried here so an individual
+post-holder can be searched for and a post's succession read. A name is only ever recorded
+where the department published one — every placeholder (`N/D`, `Vacant`, `Redacted`, `N/A`)
+resolves to a status, never to a person — and a blank name in the ledger means the
+department declined to publish it, not that the post is empty.
+
+The high-earner figures in beat 05 remain aggregate counts and bands by organisation and
+grade rather than a roll-call, and `scripts/highearners.mjs` still asserts and fails the
+run if a name reaches that file.

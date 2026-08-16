@@ -561,6 +561,13 @@ organisations the user has selected.
 
 ### 4.1 Columns
 
+`holder` is the published post-holder's name, dictionary-encoded like every other
+string column, and `-1` when the department published no name for that filing. It is
+non-null only when `status` is `filled-named`, so a placeholder can never be indexed as a
+person. `pur` and `reportsTo` ship **without** a string dictionary — their interned dense
+integers are the values, because those strings are join keys nobody renders and publishing
+them cost 90 KB gz in the largest shard.
+
 | Column | Type | Decode |
 |---|---|---|
 | `date` | int | index into `meta.dates` |
@@ -736,7 +743,9 @@ month against a normal rate of 1–4.
    stops being counted as a ministerial department.
 3. **FTE is `null` when unknown**, never an invented 1.0. `fteKnown` states the
    imputed share.
-4. **Names never leave the parser.**
+4. **Names are carried in the post shards** (`holder`), and only where the department
+   published one: every placeholder resolves to a `status` instead. They remain absent from
+   the cubes, which are aggregates, and from `highearners.json`, which asserts on a leak.
 5. **A CSV that is really a PDF, an XLS or an XLSX is rejected by magic bytes**,
    not by content-type and not by extension.
 6. **Junior organogram files are rejected by schema**, not by filename. A senior

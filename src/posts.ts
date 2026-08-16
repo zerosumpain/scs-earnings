@@ -53,6 +53,9 @@ export interface PostRow {
   pur: string | null;
   ordinal: number;
   reportsTo: string | null;
+  /** The published post-holder's name, or null when the post is vacant,
+   *  eliminated, redacted, or filed without one. */
+  holder: string | null;
 }
 
 const shardCache = new Map<string, Promise<PostRow[]>>();
@@ -63,7 +66,12 @@ export function decodeShard(ds: DataSet, shard: PostShardFile): PostRow[] {
   const col = (name: string) => shard.data[name] ?? [];
   const d = (name: string, v: number | null): string | null => {
     if (v == null || v < 0) return null;
-    return shard.dict[name]?.[v] ?? null;
+    const dict = shard.dict[name];
+    // A column with no dictionary keeps its interned integer: that is how `pur`
+    // and `reportsTo` ship, because their strings are join keys nobody renders.
+    // Identity and edges only need the values to be distinct, and they are.
+    if (!dict) return String(v);
+    return dict[v] ?? null;
   };
   const date = col('date'), pkg = col('pkg'), suborg = col('suborg'), unit = col('unit');
   const title = col('title'), rawGrade = col('rawGrade'), band = col('band'), variant = col('variant');
@@ -71,6 +79,7 @@ export function decodeShard(ds: DataSet, shard: PostShardFile): PostRow[] {
   const status = col('status'), disclosed = col('disclosed'), withheld = col('withheld');
   const floor = col('floor'), ceil = col('ceil'), fte = col('fte'), cor = col('costOfReports');
   const region = col('region'), pur = col('pur'), ordinal = col('ordinal'), reportsTo = col('reportsTo');
+  const holder = col('holder');
 
   const out: PostRow[] = new Array(shard.n);
   for (let i = 0; i < shard.n; i++) {
@@ -105,6 +114,7 @@ export function decodeShard(ds: DataSet, shard: PostShardFile): PostRow[] {
       pur: d('pur', pur[i]),
       ordinal: ordinal[i] ?? 0,
       reportsTo: d('pur', reportsTo[i]),
+      holder: d('holder', holder[i]),
     };
   }
   return out;
@@ -159,6 +169,8 @@ export interface PostPoint {
   grade: string;
   title: string;
   unit: string | null;
+  /** who held it at this filing, where published */
+  holder: string | null;
 }
 
 export interface PostGroup {
@@ -191,6 +203,11 @@ export interface PostGroup {
   /** highest published ceiling and the floor beside it */
   peak: Band | null;
   peakDate: string | null;
+  /** Every distinct published post-holder, oldest first — a post outlives the
+   *  people in it, so this is a succession, not a single name. */
+  holders: string[];
+  /** The most recent published holder, or null. */
+  holder: string | null;
 }
 
 /**
@@ -216,7 +233,7 @@ export function groupPosts(rows: PostRow[]): PostGroup[] {
     const points: PostPoint[] = list.map((r) => ({
       dateIdx: r.dateIdx, date: r.date, floor: r.floor, ceil: r.ceil,
       disclosed: r.disclosed, withheldReason: r.withheldReason, status: r.status,
-      fte: r.fte, band: r.band, grade: r.grade, title: r.title, unit: r.unit,
+      fte: r.fte, band: r.band, grade: r.grade, title: r.title, unit: r.unit, holder: r.holder,
     }));
     const last = list[list.length - 1];
     const disclosedPts = points.filter((p) => p.disclosed && p.floor != null && p.ceil != null);
@@ -224,8 +241,27 @@ export function groupPosts(rows: PostRow[]): PostGroup[] {
     let peak: PostPoint | null = null;
     for (const p of disclosedPts) if (!peak || (p.ceil ?? 0) > (peak.ceil ?? 0)) peak = p;
 
+    // A succession, in publication order: who held the post when.
+    //
+    // Departments are not consistent about case or spacing between filings —
+    // DWP filed the same Director General as "Kenny Robertson" and
+    // "KENNY ROBERTSON" — so identity is compared case-insensitively while the
+    // most recent published spelling is the one shown. Counting those as two
+    // people would invent a succession that never happened.
+    const holders: string[] = [];
+    const holderSeen = new Map<string, number>();
+    for (const r2 of list) {
+      if (!r2.holder) continue;
+      const k = r2.holder.toLowerCase().replace(/[^a-z]+/g, ' ').trim();
+      const at = holderSeen.get(k);
+      if (at == null) { holderSeen.set(k, holders.length); holders.push(r2.holder); }
+      else holders[at] = r2.holder;   // keep the latest published spelling
+    }
+
     out.push({
       key,
+      holders,
+      holder: last.holder ?? (holders.length ? holders[holders.length - 1] : null),
       org: last.org,
       identity: last.pur ? 'pur' : 'title-unit',
       pur: last.pur,
@@ -309,7 +345,9 @@ export function searchPosts(groups: PostGroup[], q: PostQuery = {}): PostGroup[]
     if (q.from && g.last.date < q.from) return false;
     if (q.to && g.first.date > q.to) return false;
     if (text.length) {
-      const hay = norm([g.title, g.unit ?? '', g.suborg ?? '', g.grade, g.profession, g.org].join(' '));
+      // Names are searchable: the holder history joins the haystack, so
+      // "jane smith" finds her posts and "director digital" still finds the post.
+      const hay = norm([g.title, g.unit ?? '', g.suborg ?? '', g.grade, g.profession, g.org, ...g.holders].join(' '));
       if (!text.every((t) => hay.includes(t))) return false;
     }
     return true;

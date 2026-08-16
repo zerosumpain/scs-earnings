@@ -1066,12 +1066,19 @@ function columnarSnapshots(registry, orgIdx) {
 
 // ---- post shards -----------------------------------------------------------
 // Columnar and dictionary-encoded. Job/Team Function and Notes prose are
-// dropped (they roughly double the size and carry no analysis). Names are
-// never stored: the disclosure analysis needs the status, not the person.
+// dropped (they roughly double the size and carry no analysis).
+//
+// The published post-holder's NAME is carried (John's decision, 2026-08-16) so
+// an individual can be searched for. gov.uk publishes it under OGL in the same
+// release as the pay band. It is dictionary-encoded like every other string, and
+// `holder` is null for every post that is vacant, eliminated, redacted or filed
+// without a name — lib.postName() only returns a name when the status machine
+// agrees the cell holds one, so a placeholder can never be indexed as a person.
 const SHARD_COLS = [
   'date', 'pkg', 'suborg', 'unit', 'title', 'rawGrade', 'band', 'variant',
   'rawProf', 'prof', 'ddat', 'pol', 'status', 'disclosed', 'withheld',
   'floor', 'ceil', 'fte', 'costOfReports', 'region', 'pur', 'ordinal', 'reportsTo',
+  'holder',
 ];
 
 function newShard(orgId) {
@@ -1080,7 +1087,7 @@ function newShard(orgId) {
     dicts: {
       pkg: dictionary(), suborg: dictionary(), unit: dictionary(), title: dictionary(),
       rawGrade: dictionary(), variant: dictionary(), rawProf: dictionary(),
-      region: dictionary(), pur: dictionary(),
+      region: dictionary(), pur: dictionary(), holder: dictionary(),
     },
     cols: Object.fromEntries(SHARD_COLS.map(c => [c, []])),
     n: 0,
@@ -1112,8 +1119,18 @@ function pushShardRow(shard, p, di, pkg, gradeIdx, profIdx, withheldReasons) {
   c.pur.push(d.pur.id(p.pur));
   c.ordinal.push(p.ordinal);
   c.reportsTo.push(d.pur.id(p.reportsTo));
+  c.holder.push(d.holder.id(p.holder));
   shard.n++;
 }
+
+// Post Unique References are join keys, never rendered — the frontend uses them
+// to give a post an identity across snapshots and to join reports-to edges, and
+// prints only how MANY posts carry one. Publishing the strings cost 90 KB gz in
+// the largest shard (60 for `pur`, 30 for `reportsTo`, which shares its
+// dictionary) for text no reader ever sees. The columns keep the interned dense
+// integer and the string dictionary is dropped: identity and edges are exactly
+// preserved, because both only need the values to be distinct.
+const DROPPED_DICTS = new Set(['pur']);
 
 function finaliseShard(shard) {
   return {
@@ -1121,7 +1138,9 @@ function finaliseShard(shard) {
     org: shard.orgId,
     n: shard.n,
     cols: SHARD_COLS,
-    dict: Object.fromEntries(Object.entries(shard.dicts).map(([k, v]) => [k, v.values()])),
+    dict: Object.fromEntries(Object.entries(shard.dicts)
+      .filter(([k]) => !DROPPED_DICTS.has(k))
+      .map(([k, v]) => [k, v.values()])),
     data: Object.fromEntries(SHARD_COLS.map(c => [c, shard.cols[c]])),
   };
 }

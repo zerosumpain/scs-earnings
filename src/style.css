@@ -1106,3 +1106,106 @@ body.sheet-open { overflow: hidden; }
    findings breakpoint the grid dropped to one column and the chip inherited
    display:block, stretching to 362px so it read as a section heading. */
 .fs-chip { width: fit-content; max-width: 100%; justify-self: start; }
+
+/* ——— T5 instrument: lever rail height, and full screen ———
+   The rail carried 921px of levers inside a panel clamped to about 600px at
+   1280x900 and 480px at 1440x780, so two of five levers (Money and Scope) sat
+   below an internal scroll with only a scrollbar as the cue — while 186-274px
+   of the readout column beside them sat empty. Three changes, in order of how
+   much they buy:
+
+   1. The rail is bounded by the STAGE, not by a guess. `bottom` pins it above
+      the limits strip, so it grows with the window instead of being clipped by
+      a fixed max-height.
+   2. The readout column no longer reserves height it does not use, so on a
+      short window the levers may run past it rather than beside it.
+   3. Full screen, for when the reader genuinely wants the whole surface. */
+.fs-hud--levers {
+  max-height: none;
+  bottom: 104px;              /* clears the limits strip */
+  display: flex;
+  flex-direction: column;
+}
+.fs-hud--levers .fs-hud-body {
+  min-height: 0;              /* a flex child will not shrink below content without this */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+/* Denser levers: the rail is a control surface, not prose. Buys ~120px. */
+.fs-hud--levers .fs-hud-body { gap: 10px; padding: 10px 12px; }
+.fs-hud--levers .fs-lever-head { margin-bottom: 4px; }
+.fs-hud--levers .fs-baseline { margin-top: 4px; }
+
+/* A rail that still has more below the fold says so, rather than leaving a
+   scrollbar to be noticed. */
+.fs-hud--levers[data-overflowing='1']::after {
+  content: 'more below ↓';
+  display: block;
+  flex: none;
+  padding: 5px 12px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--accent);
+  border-top: 1px solid var(--line);
+  background: var(--surface-rail);
+}
+
+/* Full screen. Works both for the real Fullscreen API and the class fallback,
+   so a browser that refuses the API outside a gesture behaves identically. */
+.fs-instrument.is-fullscreen,
+.fs-instrument:fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  height: 100svh;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  background: var(--surface-shell);
+}
+.fs-instrument.is-fullscreen .fs-hud--levers,
+.fs-instrument:fullscreen .fs-hud--levers { bottom: 88px; }
+/* The sticky topbar and tab strip must not paint over a fixed-position
+   instrument, and the page behind it must not scroll. */
+body.has-fullscreen-instrument { overflow: hidden; }
+body.has-fullscreen-instrument .topbar,
+body.has-fullscreen-instrument .tabs { z-index: 1; }
+.fs-expand { white-space: nowrap; }
+
+@media (max-width: 900px) {
+  /* On a phone the levers are already a disclosure, and there is no fixed
+     stage to expand into — full screen would be a control that does nothing. */
+  .fs-expand { display: none; }
+  .fs-hud--levers { bottom: auto; }
+}
+
+/* Full screen is where the levers stop being a scroller.
+   947px of lever content does not fit one column in any viewport, so full
+   screen widens the rail and runs it in two columns: ~475px of content, which
+   clears the ~550-670px available. The stage gives up the width, which is the
+   trade full screen exists to make. */
+.fs-instrument.is-fullscreen .fs-hud--levers,
+.fs-instrument:fullscreen .fs-hud--levers { width: 486px; }
+.fs-instrument.is-fullscreen .fs-hud--levers .fs-hud-body,
+.fs-instrument:fullscreen .fs-hud--levers .fs-hud-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 16px;
+  align-content: start;
+}
+.fs-instrument.is-fullscreen .fs-stage,
+.fs-instrument:fullscreen .fs-stage { left: 518px; right: 248px; }
+
+/* Below 1100px wide there is not room for a two-column rail beside a readable
+   stage, so full screen keeps one column and the overflow cue does its job. */
+@media (max-width: 1100px) {
+  .fs-instrument.is-fullscreen .fs-hud--levers,
+  .fs-instrument:fullscreen .fs-hud--levers { width: 230px; }
+  .fs-instrument.is-fullscreen .fs-hud--levers .fs-hud-body,
+  .fs-instrument:fullscreen .fs-hud--levers .fs-hud-body { display: flex; }
+  .fs-instrument.is-fullscreen .fs-stage,
+  .fs-instrument:fullscreen .fs-stage { left: 262px; }
+}
