@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Senior Civil Servant Earnings — interactive explorer of UK SCS pay over time by department, role type, profession, grade, DDaT vs policy, built on gov.uk organogram transparency data.",
+  "description": "Senior Civil Servant Earnings \u2014 interactive explorer of UK SCS pay over time by department, role type, profession, grade, DDaT vs policy, built on gov.uk organogram transparency data.",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -16,7 +16,8 @@
     "datadiff": "node scripts/datadiff.mjs",
     "check:budgets": "node scripts/check-budgets.mjs",
     "check:fonts": "node scripts/check-font-sizes.mjs",
-    "validate:palette": "node scripts/validate-palette.mjs"
+    "validate:palette": "node scripts/validate-palette.mjs",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "lz-string": "^1.5.0"
