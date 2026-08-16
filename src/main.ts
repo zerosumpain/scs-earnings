@@ -1675,6 +1675,118 @@ function highEarnerBlock(fig: StudyFigure, he: HighEarners): HTMLElement {
     + 'above the threshold — part-time and fee-paid roles appear on both lists at published bands well below it.',
   ]));
 
+  wrap.append(highEarnerRoll(he));
+  return wrap;
+}
+
+// The named roll. Unlike the organograms, these publications give an exact
+// figure rather than a £5,000 band for most rows, so this is the one place in
+// the study where an individual's pay is a number rather than a range — which
+// is exactly why it is worth showing as itself rather than as a total.
+function highEarnerRoll(he: HighEarners): HTMLElement {
+  const wrap = h('div', { style: { marginTop: '30px' } });
+  const cols = he.rows.cols;
+  const col = (n: string) => he.rows.data[n] ?? [];
+  const d = (name: string, v: number | null): string | null =>
+    (v == null || v < 0 ? null : (he.dict[name]?.[v] ?? null));
+  const editions = he.editions as unknown as HeEdition[];
+
+  if (!cols.includes('holder')) return wrap;
+
+  const holder = col('holder'), title = col('title'), org = col('org'), parent = col('parent');
+  const grade = col('rawGrade'), floor = col('floor'), ceil = col('ceil');
+  const edition = col('edition'), orgType = col('orgType'), payKind = col('payKind');
+
+  interface Entry {
+    name: string; title: string; org: string; grade: string;
+    lo: number | null; hi: number | null; exact: boolean;
+    year: number; civil: boolean;
+  }
+  const all: Entry[] = [];
+  for (let i = 0; i < he.rows.n; i++) {
+    const name = d('holder', holder[i]);
+    if (!name) continue;                       // the publisher withheld it
+    const ed = editions[edition[i] ?? -1];
+    all.push({
+      name,
+      title: d('title', title[i]) ?? '—',
+      org: d('org', org[i]) ?? d('parent', parent[i]) ?? '—',
+      grade: d('rawGrade', grade[i]) ?? '—',
+      lo: floor[i], hi: ceil[i],
+      exact: floor[i] != null && floor[i] === ceil[i],
+      year: ed?.year ?? 0,
+      civil: (he.orgTypes ?? [])[orgType[i] ?? -1] === 'Civil Service',
+    });
+  }
+  all.sort((a, b) => (b.hi ?? b.lo ?? 0) - (a.hi ?? a.lo ?? 0) || a.name.localeCompare(b.name));
+
+  const withheldNames = he.rows.n - all.length;
+  wrap.append(h('h3', { class: 'fs-subhead' }, ['The named roll']));
+  wrap.append(rich('p', { class: 'fs-body' },
+    `${num(all.length)} of ${num(he.rows.n)} rows across both publications name the post-holder; `
+    + `${num(withheldNames)} do not, and a blank name here is the publisher declining to give one rather than an empty post. `
+    + 'These lists are the only place in this study where pay is frequently an <b>exact figure</b> rather than a '
+    + '£5,000 band — where it is, the row says so. Published by the Cabinet Office under the Open Government Licence.'));
+
+  const controls = h('div', { class: 'beat-controls' });
+  const search = h('input', {
+    class: 'beat-field', type: 'search', placeholder: 'Search a name, job title or organisation…',
+    'aria-label': 'Search the named high-earner roll', style: { flex: '1 1 240px' },
+  }) as HTMLInputElement;
+  const yearSel = h('select', { class: 'beat-field', 'aria-label': 'Edition year' }) as HTMLSelectElement;
+  yearSel.append(new Option('All editions', ''));
+  for (const y of [...new Set(all.map((e) => e.year))].sort((a, b) => b - a)) yearSel.append(new Option(String(y), String(y)));
+  const csOnly = h('input', { type: 'checkbox', id: 'he-cs-only' }) as HTMLInputElement;
+  csOnly.checked = false;
+  controls.append(search, yearSel, h('label', { class: 'beat-check', for: 'he-cs-only' }, [csOnly, 'Civil Service only']));
+  wrap.append(controls);
+
+  const host = h('div', {});
+  const foot = h('div', { class: 'rank-note' });
+  wrap.append(host, foot);
+
+  const PAGE = 60;
+  let page = 0;
+  const draw = () => {
+    const q = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const yr = yearSel.value ? Number(yearSel.value) : null;
+    const matched = all.filter((e) => {
+      if (yr != null && e.year !== yr) return false;
+      if (csOnly.checked && !e.civil) return false;
+      if (!q.length) return true;
+      const hay = `${e.name} ${e.title} ${e.org} ${e.grade}`.toLowerCase();
+      return q.every((t) => hay.includes(t));
+    });
+    const shown = matched.slice(0, (page + 1) * PAGE);
+    clear(host).append(fsTable(
+      [{ label: 'Post-holder' }, { label: 'Job title' }, { label: 'Organisation' },
+        { label: 'Grade' }, { label: 'Edition', num: true }, { label: 'Published pay', num: true }],
+      shown.map((e) => ({
+        cells: [
+          e.name, e.title, e.org, e.grade, String(e.year),
+          e.lo == null ? 'not published'
+            : e.exact ? gbp(e.lo)
+              : `${gbp(e.lo)}–${gbp(e.hi ?? e.lo)}`,
+        ],
+      })),
+      { maxHeight: '560px' },
+    ));
+    clear(foot).append(h('span', {}, [
+      `${num(shown.length)} of ${num(matched.length)} named rows`
+      + `${matched.length !== all.length ? ` (filtered from ${num(all.length)})` : ''}. `
+      + 'Sorted by the top of the published pay. An exact figure prints as one number; a band prints as two. '
+      + 'A person appearing twice held a listed post in two editions — these are annual snapshots, not a career record.',
+    ]));
+    if (shown.length < matched.length) {
+      const more = h('button', { class: 'chip', type: 'button', style: { marginTop: '10px' } }, ['Show more']);
+      more.addEventListener('click', () => { page++; draw(); });
+      foot.append(more);
+    }
+  };
+  search.addEventListener('input', () => { page = 0; draw(); });
+  yearSel.addEventListener('change', () => { page = 0; draw(); });
+  csOnly.addEventListener('change', () => { page = 0; draw(); });
+  draw();
   return wrap;
 }
 

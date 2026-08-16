@@ -110,6 +110,12 @@ where the department published one — every placeholder (`N/D`, `Vacant`, `Reda
 resolves to a status, never to a person — and a blank name in the ledger means the
 department declined to publish it, not that the post is empty.
 
-The high-earner figures in beat 05 remain aggregate counts and bands by organisation and
-grade rather than a roll-call, and `scripts/highearners.mjs` still asserts and fails the
-run if a name reaches that file.
+The Cabinet Office high-earner lists carry names too, as a searchable **named roll** in
+beat 05 — 2,236 of the rows across both publications name the post-holder. Those lists are
+the one place in the study where pay is frequently an exact figure rather than a £5,000
+band, so the roll prints an exact figure as one number and a band as two.
+
+`scripts/highearners.mjs` still fails the run on an e-mail address, on an unexpected
+name-like field, and on any published name reaching a column **other** than the holder
+dictionary — that last one is not a privacy check but a correctness one: a name in the job
+title means the parser has mismatched its columns and the pay is on the wrong post.

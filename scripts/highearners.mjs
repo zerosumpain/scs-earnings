@@ -434,6 +434,28 @@ function nameColumns(headers) {
   return out;
 }
 
+// The published name for one row, or null.
+//
+// A placeholder is not a person: these files use "Not disclosed", "Vacant",
+// "N/D" and a bare "-" in the name cell exactly as the organograms do, and a
+// row whose name is withheld must read as withheld rather than as somebody
+// called "Not Disclosed". Senior military officers are published by RANK rather
+// than by name in some editions, which is a published fact about the post and
+// is kept as-is.
+function heName(sur, fore, whole) {
+  const clean = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
+  let name = clean(whole);
+  if (!name) {
+    const s = clean(sur), f = clean(fore);
+    // Files vary: some give "Surname, Forename", some two plain columns.
+    name = s && f ? `${f} ${s}` : (s || f);
+  }
+  if (!name) return null;
+  if (/^[-—–.]+$/.test(name)) return null;
+  if (/^(n[\/. ]?[ad]|not\s*(disclosed|published|provided|applicable)|non[- ]?disclos|withheld|undisclosed|vacan\w*|redact\w*|unknown|tbc|blank)$/i.test(name)) return null;
+  return name.length > 80 ? name.slice(0, 80) : name;
+}
+
 // One high-earner CSV -> normalised rows + the names it contained.
 // Rejection reasons are returned, never thrown: one bad attachment must never
 // sink the run.
@@ -462,11 +484,14 @@ function parseHighEarners(text) {
       : (cell(r, col.floor) + cell(r, col.ceil));
     if (org === '' && title === '' && gradeRaw === '' && payRaw === '') { blankRows++; continue; }
 
-    // names: collected, never stored. See assertNoNames().
+    // Names are collected for the guard's bigram set AND carried onto the row
+    // (John's decision, 2026-08-16). Era B publishes either a whole "Name" or
+    // Surname + Forename(s); era C always splits them.
     const sur = cell(r, col.names.surname);
     const fore = cell(r, col.names.forename);
     const whole = cell(r, col.names.whole);
     if (sur || fore || whole) names.push({ sur, fore, whole });
+    const holder = heName(sur, fore, whole);
 
     const [lo, hi] = col.range >= 0
       ? splitRange(cell(r, col.range))
@@ -497,6 +522,7 @@ function parseHighEarners(text) {
       payKind: pay.kind,
       floor: pay.floor,
       ceil: pay.ceil,
+      holder,
     });
   }
 
@@ -541,30 +567,64 @@ function forbiddenPairs(names) {
 const NAME_KEY_RE = /(^|[^a-z])(name|surname|forename|email)/i;
 const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
 
+// The payload now carries post-holder names DELIBERATELY, in exactly one place:
+// `rows.holder` and its dictionary (John's decision, 2026-08-16). Everything
+// else about the guard stands, because the reasons for the other two rules were
+// never the same as the reason for the first.
+//
+// What is still forbidden, and why:
+//   - E-MAIL ADDRESSES. Published in some source attachments; they are contact
+//     details, not the salary disclosure, and nothing here needs them.
+//   - A name reaching any OTHER field. A name in `title` or `org` means the
+//     parser mismatched its columns, which is a correctness fault whichever way
+//     the naming policy falls — it silently shifts pay onto the wrong post.
+const ALLOWED_NAME_PATH = 'dict.holder';
+
 function assertNoNames(payload, pairs) {
-  const text = JSON.stringify(payload);
-
-  // 1. no key may be name-like — a future edit that adds one is caught here
-  const keys = new Set();
-  (function walk(v) {
-    if (Array.isArray(v)) { for (const x of v) walk(x); return; }
-    if (v && typeof v === 'object') { for (const k of Object.keys(v)) { keys.add(k); walk(v[k]); } }
-  })(payload);
-  const badKeys = [...keys].filter(k => NAME_KEY_RE.test(k)).sort(cmp);
-  if (badKeys.length) return `name-like field(s) in the payload: ${badKeys.join(', ')}`;
-
-  // 2. no e-mail address anywhere
-  const mail = text.match(EMAIL_RE);
+  // 1. no e-mail address anywhere
+  const mail = JSON.stringify(payload).match(EMAIL_RE);
   if (mail) return `an e-mail address reached the payload: ${mail[0]}`;
 
-  // 3. no published full name, in either order, anywhere in the payload
-  const toks = normHeader(text).split(' ').filter(Boolean);
+  // 2. no name-like KEY other than the intended one — a future edit that adds
+  //    `surname` or `forename` is still caught
+  const badKeys = new Set();
+  (function walk(v, path) {
+    if (Array.isArray(v)) { for (const x of v) walk(x, path); return; }
+    if (v && typeof v === 'object') {
+      for (const k of Object.keys(v)) {
+        const p = path ? `${path}.${k}` : k;
+        if (NAME_KEY_RE.test(k) && p !== ALLOWED_NAME_PATH && !p.endsWith('.holder') && k !== 'holder') badKeys.add(p);
+        walk(v[k], p);
+      }
+    }
+  })(payload, '');
+  if (badKeys.size) return `unexpected name-like field(s): ${[...badKeys].sort(cmp).join(', ')}`;
+
+  // 3. no published name may appear anywhere EXCEPT the holder dictionary.
+  //    A name in a job title or an organisation name means the parser has
+  //    mismatched its columns and the pay is on the wrong row.
+  const withoutHolders = JSON.parse(JSON.stringify(payload));
+  // Blank the holder dictionary wherever it sits, so the bigram sweep below is
+  // asking only about the OTHER fields.
+  (function blank(v) {
+    if (Array.isArray(v)) { for (const x of v) blank(x); return; }
+    if (v && typeof v === 'object') {
+      for (const k of Object.keys(v)) {
+        if (k === 'holder') v[k] = Array.isArray(v[k]) ? [] : null;
+        else blank(v[k]);
+      }
+    }
+  })(withoutHolders);
+  const toks = normHeader(JSON.stringify(withoutHolders)).split(' ').filter(Boolean);
   const bigrams = new Set();
   for (let i = 0; i + 1 < toks.length; i++) bigrams.add(toks[i] + ' ' + toks[i + 1]);
   const hits = [];
   for (const p of pairs) if (bigrams.has(p)) hits.push(p);
-  if (hits.length) return `${hits.length} published name(s) reached the payload, e.g. "${hits.slice(0, 3).join('", "')}"`;
-
+  if (hits.length) {
+    return `${hits.length} published name(s) reached a field other than the holder `
+      + `dictionary, e.g. "${hits.slice(0, 3).join('", "')}" — the parser has probably `
+      + `mismatched its columns, so the pay is on the wrong post`;
+  }
   return null;
 }
 
@@ -700,6 +760,7 @@ async function main() {
   const dParent = dictionary(editions.flatMap(e => e.rows.map(r => r.parent)));
   const dTitle = dictionary(editions.flatMap(e => e.rows.map(r => r.title)));
   const dGrade = dictionary(editions.flatMap(e => e.rows.map(r => r.rawGrade)));
+  const dHolder = dictionary(editions.flatMap(e => e.rows.map(r => r.holder)));
 
   const editionRecords = editions.map((e, i) => {
     const src = resolved.find(s => s.id === e.sourceId);
@@ -738,7 +799,7 @@ async function main() {
     || cmp(a.org, b.org) || cmp(a.rawGrade, b.rawGrade)
     || (a.floor ?? -1) - (b.floor ?? -1) || cmp(a.title, b.title));
 
-  const ROW_COLS = ['edition', 'org', 'parent', 'orgType', 'title', 'rawGrade', 'band', 'payKind', 'floor', 'ceil'];
+  const ROW_COLS = ['edition', 'org', 'parent', 'orgType', 'title', 'rawGrade', 'band', 'payKind', 'floor', 'ceil', 'holder'];
   const data = Object.fromEntries(ROW_COLS.map(c => [c, []]));
   for (const r of flat) {
     data.edition.push(r.edition);
@@ -747,6 +808,7 @@ async function main() {
     data.orgType.push(r.orgType ? orgTypes.indexOf(r.orgType) : -1);
     data.title.push(dTitle.idx(r.title));
     data.rawGrade.push(dGrade.idx(r.rawGrade));
+    data.holder.push(dHolder.idx(r.holder));
     data.band.push(HE_GRADE_BANDS.indexOf(r.band));
     data.payKind.push(PAY_KINDS.indexOf(r.payKind));
     data.floor.push(r.floor);
@@ -813,7 +875,7 @@ async function main() {
     generated: resolved.map(s => s.publicUpdatedAt).filter(Boolean).sort(cmp).pop() || null,
     scope: { only: ONLY.length ? ONLY : null, maxFiles: MAX_FILES || null, partial: PARTIAL },
     licence: 'UK Open Government Licence (OGL)',
-    note: 'Two publications, two thresholds, one deliberate hole. The eras are kept separate on purpose: the disclosure threshold moved from £150,000 to £174,000 between the 2022 and 2025 editions, and no list was published for 30 September 2023 or 30 September 2024. Nothing here is interpolated across that hole. Individual names are published upstream under OGL and are deliberately not republished: this file carries counts, bands, job titles, organisation and grade only.',
+    note: 'Two publications, two thresholds, one deliberate hole. The eras are kept separate on purpose: the disclosure threshold moved from £150,000 to £174,000 between the 2022 and 2025 editions, and no list was published for 30 September 2023 or 30 September 2024. Nothing here is interpolated across that hole. Individual names are published upstream under OGL and are carried here in rows.dict.holder, so a named post-holder can be searched for; a row whose name the publisher withheld carries none. E-mail addresses are never republished.',
     sources: resolved.map(s => ({
       id: s.id,
       era: s.era,
@@ -839,7 +901,7 @@ async function main() {
     orgTypeNote: 'Published from the 2015 edition onwards. Only "Civil Service" is the civil service: in the 2025 list 157 of 565 published rows are Civil Service, 231 are commercial enterprises in the public sector and 177 are other central government. The 2010-2014 editions have no such column, so no civil-service figure exists for those years and none is estimated.',
     grades: HE_GRADE_BANDS,
     payKinds: PAY_KINDS,
-    dict: { org: dOrg.list, parent: dParent.list, title: dTitle.list, rawGrade: dGrade.list },
+    dict: { org: dOrg.list, parent: dParent.list, title: dTitle.list, rawGrade: dGrade.list, holder: dHolder.list },
     editions: editionRecords,
     series,
     gaps,
@@ -855,18 +917,20 @@ async function main() {
 
   const pairs = forbiddenPairs(allNames);
   // A guard nobody has watched fail is a guard nobody knows works.
-  // SCS_HE_LEAK_TEST=1 walks a real published name into the payload so the
-  // assertion below can be seen to fire. It must exit 2 and write nothing.
+  // SCS_HE_LEAK_TEST=1 walks a real published name into the JOB TITLE dictionary
+  // — which is what a column mismatch looks like — so the assertion below can be
+  // seen to fire. It must exit 2 and write nothing. Names in `rows.dict.holder`
+  // are intended and must NOT fire.
   if (process.env.SCS_HE_LEAK_TEST === '1') {
     const victim = allNames.find(n => n.sur && n.fore) || allNames[0];
-    payload.dict.title = payload.dict.title.concat(
-      victim.whole || `${victim.fore} ${victim.sur}`.trim(),
-    );
-    log('  SCS_HE_LEAK_TEST=1 — a published name was injected; the assertion must now fire');
+    const injected = victim.whole || `${victim.fore} ${victim.sur}`.trim();
+    payload.dict.title = payload.dict.title.concat(injected);
+    log('  SCS_HE_LEAK_TEST=1 — a published name was injected into the title dictionary; the assertion must now fire');
   }
   const leak = assertNoNames(payload, pairs);
   if (leak) fatal(`NAME LEAK — ${leak}`);
-  log(`  no names in the payload  (${pairs.size} published names checked against the emitted JSON)`);
+  const named = payload.dict.holder.length;
+  log(`  columns check out  (${pairs.size} published names checked; ${named} named post-holders carried deliberately, no names in any other field, no e-mail addresses)`);
 
   // the hole is a gap, not a data point
   const gapDates = new Set(gaps.flatMap(g => g.missing));
