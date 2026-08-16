@@ -406,3 +406,194 @@ export function orgChart(rows: PostRow[], date: string): { nodes: PostRow[]; edg
   }
   return { nodes, edges, roots };
 }
+
+// ---------------------------------------------------------------------------
+// Organisation structure — the reporting tree, and what it says about layering
+// ---------------------------------------------------------------------------
+//
+// Every senior organogram carries a "Reports to" column holding the Post Unique
+// Reference of the post above. 492 of 493 files have it, and where a department
+// files a complete return the result is a genuine tree: DWP's August 2026
+// filing is 341 posts, 340 edges, one root and nothing dangling.
+//
+// This is the only part of the corpus that describes SHAPE rather than level,
+// and it answers a question no pay figure can: how many layers of senior
+// management a department runs, and how many people each of them supervises.
+//
+// Two honesty rules are built in rather than left to the caller:
+//   - A snapshot whose edges do not resolve is not a shallow organisation, it
+//     is a partial filing. `dangling` and `rootCount` are reported so a reader
+//     can tell the difference, and `complete` is false when they are not.
+//   - "Span" counts only DIRECT reports that are themselves senior posts. The
+//     organogram stops at the SCS boundary, so a Deputy Director with forty
+//     junior staff and no senior reports has a span of zero here. That is a
+//     property of the data, not of the job, and the instrument must say so.
+
+export interface OrgLayer {
+  depth: number;
+  posts: number;
+  byGrade: Record<string, number>;
+}
+
+export interface OrgSpan {
+  pur: string;
+  title: string;
+  grade: string;
+  unit: string | null;
+  holder: string | null;
+  reports: number;
+  depth: number;
+}
+
+export interface OrgStructure {
+  org: string;
+  date: string;
+  posts: number;
+  edges: number;
+  rootCount: number;
+  dangling: number;
+  /** true when every non-root post resolves to a parent in the same filing */
+  complete: boolean;
+  layers: OrgLayer[];
+  /** deepest chain, counted in posts, root = 1 */
+  depth: number;
+  managers: number;
+  /** senior posts with no senior post reporting to them */
+  leaves: number;
+  medianSpan: number;
+  maxSpan: number;
+  spans: OrgSpan[];
+}
+
+/** Build the reporting tree for one organisation at one reference date. */
+export function orgStructure(rows: PostRow[], date: string): OrgStructure | null {
+  // Every post filed at this date takes part in RESOLVING the tree, including
+  // ones recorded as eliminated: a live post frequently reports to a post the
+  // department has marked for deletion, and dropping those first orphans its
+  // children and makes a complete return look like a partial one. They are
+  // excluded from the counts below, not from the lookup.
+  const all = rows.filter((r) => r.date === date);
+  const nodes = all.filter((r) => r.status !== 'eliminated');
+  if (!nodes.length) return null;
+
+  const byPur = new Map<string, PostRow>();
+  for (const r of all) if (r.pur) byPur.set(r.pur, r);
+
+  const parent = new Map<string, string>();
+  const kids = new Map<string, string[]>();
+  let dangling = 0;
+  // Counted separately from `parent.size`: 2,284 rows across 252 files repeat a
+  // Post Unique Reference inside one filing, and a Map keyed on the PUR
+  // silently collapses them. Using its size as "how many posts have a parent"
+  // makes a complete return look like a partial one — which is how 33 of DWP's
+  // 37 filings were being discarded as unreadable.
+  let parented = 0;
+  const rootPurs: string[] = [];
+  for (const r of nodes) {
+    if (!r.pur) { dangling++; continue; }
+    if (r.reportsTo && byPur.has(r.reportsTo) && r.reportsTo !== r.pur) {
+      parented++;
+      parent.set(r.pur, r.reportsTo);
+      const list = kids.get(r.reportsTo);
+      if (list) list.push(r.pur); else kids.set(r.reportsTo, [r.pur]);
+    } else if (r.reportsTo && !byPur.has(r.reportsTo)) {
+      dangling++;
+    } else {
+      rootPurs.push(r.pur);
+    }
+  }
+
+  // Depth by walking up. A cycle would loop forever, and departments do
+  // occasionally file one, so the walk is bounded and a post caught in one is
+  // reported at the depth it was found rather than dropped.
+  const depthOf = new Map<string, number>();
+  const depth = (pur: string): number => {
+    const seen = new Set<string>();
+    let d = 1, cur = pur;
+    for (;;) {
+      // d counts 1 + the steps taken so far, so a memoised ancestor contributes
+      // its own depth plus the steps, not plus d — adding d double-counts the
+      // first rung and puts a third of the department three layers too deep.
+      if (depthOf.has(cur)) { d = (d - 1) + depthOf.get(cur)!; break; }
+      const p = parent.get(cur);
+      if (!p || seen.has(p)) break;
+      seen.add(p); cur = p; d++;
+      if (d > 40) break;
+    }
+    depthOf.set(pur, d);
+    return d;
+  };
+  for (const r of nodes) if (r.pur) depth(r.pur);
+
+  const layerMap = new Map<number, OrgLayer>();
+  for (const r of nodes) {
+    if (!r.pur) continue;
+    const d = depthOf.get(r.pur) ?? 1;
+    let L = layerMap.get(d);
+    if (!L) { L = { depth: d, posts: 0, byGrade: {} }; layerMap.set(d, L); }
+    L.posts++;
+    L.byGrade[r.grade] = (L.byGrade[r.grade] ?? 0) + 1;
+  }
+  const layers = [...layerMap.values()].sort((a, b) => a.depth - b.depth);
+
+  const spans: OrgSpan[] = [];
+  for (const [pur, list] of kids) {
+    const r = byPur.get(pur);
+    if (!r) continue;
+    spans.push({
+      pur, title: r.title, grade: r.grade, unit: r.unit, holder: r.holder,
+      reports: list.length, depth: depthOf.get(pur) ?? 1,
+    });
+  }
+  spans.sort((a, b) => b.reports - a.reports || a.title.localeCompare(b.title));
+  const counts = spans.map((s) => s.reports).sort((a, b) => a - b);
+  const median = counts.length ? counts[Math.floor(counts.length / 2)] : 0;
+
+  return {
+    org: nodes[0].org,
+    date,
+    posts: nodes.length,
+    edges: parented,
+    rootCount: rootPurs.length,
+    dangling,
+    complete: dangling === 0 && rootPurs.length <= 2 && parented >= nodes.length - 3,
+    layers,
+    depth: layers.length ? layers[layers.length - 1].depth : 1,
+    managers: kids.size,
+    leaves: nodes.length - kids.size,
+    medianSpan: median,
+    maxSpan: counts.length ? counts[counts.length - 1] : 0,
+    spans,
+  };
+}
+
+/**
+ * The structure of one organisation over time.
+ *
+ * Only filings whose tree actually resolves are returned. A partial filing
+ * looks exactly like a flatter organisation, and plotting the two together
+ * would show a delayering that never happened.
+ */
+export function structureSeries(rows: PostRow[], dates: string[]): OrgStructure[] {
+  return structureSeriesDetailed(rows, dates).kept;
+}
+
+/** The same, plus why each rejected filing was rejected. */
+export function structureSeriesDetailed(rows: PostRow[], dates: string[]): {
+  kept: OrgStructure[];
+  rejected: { date: string; reason: string; posts: number; dangling: number; roots: number }[];
+} {
+  const kept: OrgStructure[] = [];
+  const rejected: { date: string; reason: string; posts: number; dangling: number; roots: number }[] = [];
+  for (const d of dates) {
+    const s = orgStructure(rows, d);
+    if (!s) { rejected.push({ date: d, reason: 'no posts', posts: 0, dangling: 0, roots: 0 }); continue; }
+    const base = { date: d, posts: s.posts, dangling: s.dangling, roots: s.rootCount };
+    if (s.posts < 30) rejected.push({ ...base, reason: 'too few posts to read a shape' });
+    else if (s.dangling > 0) rejected.push({ ...base, reason: 'reporting lines point outside the filing' });
+    else if (s.rootCount > 2) rejected.push({ ...base, reason: 'more than two posts report to nobody' });
+    else if (!s.complete) rejected.push({ ...base, reason: 'too few posts have a parent' });
+    else kept.push(s);
+  }
+  return { kept, rejected };
+}

@@ -35,7 +35,7 @@ import { h, clear, append, esc, rich } from './dom';
 import { type AppState, type Basis, defaultState, readHash, writeHash } from './state';
 import { stateToFilter, pmPayEntry, pmPayFor, PM_PAY_SOURCE, PM_PAY_VERIFIED_TO } from './query';
 import {
-  loadPosts, groupPosts, searchPosts,
+  loadPosts, groupPosts, searchPosts, orgStructure, structureSeriesDetailed,
   type PostRow, type PostGroup, type PostSort,
 } from './posts';
 import {
@@ -2459,7 +2459,7 @@ function renderLedger(main: HTMLElement, beat: Beat): void {
   // The ledger beat is where a reader asks "which post, though?", so the
   // post-level record hangs off the bottom of it rather than off a tab of its
   // own. It is opt-in: the shards are not first paint.
-  if (beat.slug === 'who-wins') root.append(postLedger());
+  if (beat.slug === 'who-wins') { root.append(orgStructureBlock()); root.append(postLedger()); }
   const cited = citedHere(beat);
   if (cited) root.append(cited);
   root.append(closeBlock(beat));
@@ -3387,3 +3387,187 @@ boot().catch((err) => {
     `<div class="wrap" style="padding:60px 20px"><h2 class="fs-h1">Could not load the data</h2>` +
     `<p class="fs-body">${esc(String(err))}</p></div>`;
 });
+
+// ---------------------------------------------------------------------------
+// The reporting structure — the one thing in the corpus that describes SHAPE
+// ---------------------------------------------------------------------------
+//
+// Every senior organogram carries the post above in a "Reports to" column, and
+// where a department files completely the result is a real tree. That answers a
+// question no pay figure can: how many layers of senior management a department
+// runs, and whether the senior estate has been getting flatter or simply bigger.
+//
+// One organisation's shard at a time, because the answer is per-department and
+// loading all 78 to show one tree would be indefensible.
+function orgStructureBlock(): HTMLElement {
+  const wrap = h('div', { style: { marginTop: '34px' } });
+  wrap.append(h('h3', { class: 'fs-subhead' }, ['The shape of a department']));
+  wrap.append(rich('p', { class: 'fs-body' },
+    'Pay says how much; the reporting line says how the senior estate is <b>arranged</b>. Each filing names the post '
+    + 'above, so a complete return reconstructs the hierarchy exactly as the department drew it. '
+    + 'A span here counts only <b>senior</b> direct reports: the organogram stops at the SCS boundary, so a deputy '
+    + 'director running a large junior team has a span of nought in this data. That is a property of the return, '
+    + 'not of the job.'));
+
+  const tierA = ds.meta.orgs.filter((o) => o.tier === 'A');
+  const preferred = tierA.find((o) => o.id === 'DWP') ?? tierA[0];
+  const controls = h('div', { class: 'beat-controls' });
+  const sel = h('select', { class: 'beat-field', 'aria-label': 'Organisation' }) as HTMLSelectElement;
+  for (const o of tierA) sel.append(new Option(o.name, o.id));
+  if (preferred) sel.value = preferred.id;
+  const loadBtn = h('button', { class: 'chip', type: 'button' }, ['Load the reporting tree']);
+  controls.append(sel, loadBtn);
+  const status = h('div', { class: 'beat-status' });
+  const body = h('div', {});
+  wrap.append(controls, status, body);
+
+  const run = async () => {
+    const id = sel.value;
+    const token = renderToken;
+    clear(status).append(h('span', { class: 'spin' }), h('span', {}, [`Loading ${orgLabel(id)}…`]));
+    clear(body);
+    let rows;
+    try { rows = await loadPosts(ds, id); } catch (err) {
+      if (token !== renderToken) return;
+      clear(status).append(h('span', {}, [`Could not load ${orgLabel(id)}: ${String(err)}`]));
+      return;
+    }
+    if (token !== renderToken) return;
+
+    const dates = [...new Set(rows.map((r) => r.date))].sort();
+    const detail = structureSeriesDetailed(rows, dates);
+    const seriesAll = detail.kept;
+    if (!seriesAll.length) {
+      clear(status).append(h('span', {}, [
+        `${orgLabel(id)} has filed no return whose reporting lines fully resolve, so no tree can be drawn for it. `
+        + 'That is a filing gap, not a flat organisation — the two look identical and are not the same thing.',
+      ]));
+      return;
+    }
+    const latest = seriesAll[seriesAll.length - 1];
+    clear(status).append(h('span', {}, [
+      `${num(seriesAll.length)} of ${num(dates.length)} filings resolve into a complete tree. `
+      + 'The rest are left out, because a partial return looks exactly like a flatter organisation: '
+      + Object.entries(detail.rejected.reduce((a: Record<string, number>, x) => {
+        a[x.reason] = (a[x.reason] ?? 0) + 1; return a;
+      }, {})).sort((a, b) => b[1] - a[1]).map(([why, n]) => `${num(n)} ${why}`).join('; ') + '.',
+    ]));
+
+    // ---- the latest tree, as a layer profile
+    const gradeOrder = ds.meta.grades;
+    const layerRows = latest.layers.map((L) => {
+      const parts = Object.entries(L.byGrade).sort((a, b) => gradeOrder.indexOf(a[0]) - gradeOrder.indexOf(b[0]));
+      return {
+        cells: [
+          `Layer ${L.depth}`,
+          num(L.posts),
+          pct((L.posts / latest.posts) * 100, 1, false),
+          parts.map(([g, n]) => `${g} ${num(n)}`).join(' · ') || '—',
+        ],
+      };
+    });
+    body.append(card({
+      variant: 'figure', figNo: '5.8',
+      title: `${orgLabel(id)} — the senior hierarchy at ${dateLabel(latest.date)}`,
+      sub: `${num(latest.posts)} senior posts · ${num(latest.edges)} reporting lines · `
+        + `${latest.depth} layer${latest.depth === 1 ? '' : 's'} · median span ${num(latest.medianSpan)} · source [1]`,
+      caption: `Layer 1 is the post nobody in the return reports to. Each layer counts the senior posts at that `
+        + `distance below it. Grades are shown per layer because a layer is not a grade: `
+        + `${orgLabel(id)} files senior posts of more than one grade at the same distance from the top.`,
+      table: fsTable(
+        [{ label: 'Layer' }, { label: 'Senior posts', num: true }, { label: 'Share', num: true }, { label: 'Grades present' }],
+        layerRows,
+      ),
+      build: (host) => {
+        const maxPosts = Math.max(...latest.layers.map((L) => L.posts), 1);
+        const bars = h('div', { class: 'layer-profile' });
+        for (const L of latest.layers) {
+          bars.append(h('div', { class: 'layer-row' }, [
+            h('span', { class: 'metric-label' }, [`Layer ${L.depth}`]),
+            h('div', { class: 'layer-bar' }, [
+              h('span', { style: { width: `${Math.max(2, (L.posts / maxPosts) * 100)}%` } }),
+            ]),
+            h('span', { class: 'num' }, [num(L.posts)]),
+          ]));
+        }
+        host.append(bars);
+        return null;
+      },
+      foot: [
+        `${num(latest.managers)} of ${num(latest.posts)} senior posts have at least one senior post reporting to them; `
+        + `${num(latest.leaves)} have none. Widest span ${num(latest.maxSpan)}. `
+        + (latest.rootCount > 1 ? `${num(latest.rootCount)} posts report to nobody in this return, so the department filed more than one top. ` : '')
+        + 'Counted over live posts only; posts recorded as eliminated are excluded.',
+      ],
+    }));
+
+    // ---- has it flattened?
+    if (seriesAll.length >= 4) {
+      const labels = seriesAll.map((s) => s.date);
+      body.append(card({
+        variant: 'figure', figNo: '5.9',
+        title: `${orgLabel(id)} — layers and span over time`,
+        sub: `${num(seriesAll.length)} complete filings, ${dateLabel(seriesAll[0].date)} to ${dateLabel(latest.date)} · source [1]`,
+        caption: 'Whether the senior estate has been flattening, or simply growing. Layers count the deepest chain in '
+          + 'the return; median span is the middle number of senior direct reports among posts that have any. Only '
+          + 'filings whose reporting lines fully resolve are plotted, so the line is not continuous in time.',
+        build: (host) => {
+          return lineChart(host, {
+              labels,
+              series: [
+                { key: 'depth', label: 'Layers (deepest chain)', color: colorFor(0), values: seriesAll.map((s) => s.depth) },
+                { key: 'span', label: 'Median senior span', color: colorFor(1), values: seriesAll.map((s) => s.medianSpan) },
+              ],
+              yFormat: (n) => (n == null ? '—' : String(Math.round(n))),
+              yZero: true,
+              height: 240,
+              title: `${orgLabel(id)} layers and median span`,
+              desc: 'Two flat-ish series: the number of management layers and the median number of senior direct reports.',
+          });
+        },
+        foot: [
+          `Senior posts in this department went from ${num(seriesAll[0].posts)} at ${dateLabel(seriesAll[0].date)} `
+          + `to ${num(latest.posts)} at ${dateLabel(latest.date)}, while the median span moved from `
+          + `${num(seriesAll[0].medianSpan)} to ${num(latest.medianSpan)} and the deepest chain from `
+          + `${num(seriesAll[0].depth)} to ${num(latest.depth)} layers. `
+          + 'A senior estate that grows without changing shape is being scaled, not restructured.',
+        ],
+      }));
+    }
+
+    // ---- who supervises the most
+    const top = latest.spans.slice(0, 12);
+    body.append(card({
+      variant: 'figure', figNo: '5.10',
+      title: `The widest spans at ${dateLabel(latest.date)}`,
+      sub: `${orgLabel(id)} · senior direct reports only · source [1]`,
+      caption: 'The posts with the most senior posts reporting directly to them. A wide span at the top of a '
+        + 'department is a flat structure; a wide span in the middle is usually a directorate that has grown '
+        + 'without adding a layer.',
+      build: (host) => {
+        return barChart(host, {
+          rows: top.map((s) => ({
+            key: s.pur,
+            label: `${s.title.slice(0, 46)}${s.title.length > 46 ? '…' : ''}`,
+            value: s.reports,
+            color: 'var(--accent)',
+          })),
+          valueFormat: (n) => num(n) + (n === 1 ? ' report' : ' reports'),
+          title: 'Widest senior spans of control',
+        });
+      },
+      foot: [
+        'Titles are as published. A post appearing here with a small span is not under-employed — the organogram '
+        + 'records only senior reports, and most of a department reports to somebody below this boundary.',
+      ],
+    }));
+  };
+
+  loadBtn.addEventListener('click', run);
+  sel.addEventListener('change', () => { if (body.childNodes.length) run(); });
+  return wrap;
+}
+
+function orgLabel(id: string): string {
+  return ds.meta.orgs.find((o) => o.id === id)?.name ?? id;
+}

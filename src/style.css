@@ -1209,3 +1209,12 @@ body.has-fullscreen-instrument .tabs { z-index: 1; }
   .fs-instrument.is-fullscreen .fs-stage,
   .fs-instrument:fullscreen .fs-stage { left: 262px; }
 }
+
+/* ——— Layer profile: the senior hierarchy as a shape ———
+   A pyramid that is not a pyramid is the point of the instrument, so the bars
+   are plain and the numbers sit beside them rather than inside. */
+.layer-profile { display: flex; flex-direction: column; gap: 6px; padding: 4px 0; }
+.layer-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 52px; align-items: center; gap: 12px; }
+.layer-row .layer-bar { height: 20px; background: var(--surface-sunken); border: 1px solid var(--line-hair); }
+.layer-row .layer-bar > span { display: block; height: 100%; background: var(--accent); }
+.layer-row .num { font-family: var(--font-mono); font-size: var(--fs-label); text-align: right; }

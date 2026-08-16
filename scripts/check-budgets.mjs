@@ -58,6 +58,7 @@ const BUDGETS = [
   { file: 'cube-prof.json',       gz: 250 * KB, raw: 1700 * KB,      paint: false, load: 'lazy, professions' },
   { file: 'cube-prof-b.json',     gz: 250 * KB, raw: 1700 * KB,      paint: false, load: 'lazy, tier B' },
   { file: 'highearners.json',     gz: 250 * KB, raw: 1500 * KB,      paint: false, load: 'lazy' },
+  { file: 'ssrb-gap.json',        gz: 20 * KB,  raw: 120 * KB,       paint: false, load: 'lazy' },
   { file: 'benchmarks.json',      gz: 40 * KB,  raw: null,           paint: false, load: 'lazy' },
   { file: 'benchmarks-itjw.json', gz: 15 * KB,  raw: null,           paint: false, load: 'lazy, quarantined' },
   { file: 'changelog.json',       gz: 20 * KB,  raw: null,           paint: false, load: 'lazy' },

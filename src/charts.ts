@@ -642,7 +642,20 @@ export function lineChart(container: HTMLElement, opts: LineChartOpts): ChartHan
     const ih = Math.max(40, H - m.top - m.bottom);
 
     const dom = computeDomain(dmin, dmax, { yZero: opts.yZero, yDomain: opts.yDomain, count: ih < 190 ? 4 : 5 });
-    const { lo, hi, ticks } = dom;
+    const { lo, hi } = dom;
+    // Two ticks that FORMAT identically are one tick as far as a reader is
+    // concerned. A small integer range picks a half-unit step and prints
+    // "6 6 5 5 4 4 3", which reads as a broken axis rather than a fine one.
+    // Deduplicating on the formatted label rather than the value fixes it for
+    // every chart at once, and leaves a genuinely fractional axis alone.
+    const ticks: number[] = [];
+    const seenLabels = new Set<string>();
+    for (const t of dom.ticks) {
+      const label = opts.yFormat(t);
+      if (seenLabels.has(label)) continue;
+      seenLabels.add(label);
+      ticks.push(t);
+    }
     // The left margin has to know how wide the formatted ticks actually are.
     m.left = axisLeftFor(svg, ticks.map((t) => opts.yFormat(t)), m.left, W);
     const iw = Math.max(40, W - m.left - m.right);

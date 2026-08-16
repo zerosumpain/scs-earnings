@@ -9,3 +9,7 @@ ingest.log
 # would churn ~1.6MB of binary diff into history forever.
 shots/
 shot-*.png
+
+# SSRB full-text corpus: ~8.6M of extracted PDF text, rebuilt by `npm run ssrb`.
+# It is the retrieval index for --search, not a payload.
+data/ssrb-corpus.json
