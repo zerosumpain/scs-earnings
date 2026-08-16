@@ -5,7 +5,26 @@ This document is the interface between the ingestion pipeline and the frontend:
 the pipeline owns `public/data/**` and `data/manifest.json`, the frontend owns
 `src/**`, and neither reads the other's source.
 
-Schema version: **1** (every file carries `schema: 1`; a breaking change bumps it).
+Schema version: **2** for everything `scripts/ingest.mjs` writes — `meta.json`,
+the four cubes, the post shards and `data/manifest.json`. Sections 9, 10 and 11
+are written by their own scripts, their shapes have not changed, and they still
+carry `schema: 1`.
+
+Schema 2 changed two shapes and one field, and nothing else:
+
+* **The cubes are columnar** — one array per column instead of one array per
+  cell, with three columns stored as residuals (section 3).
+* **The snapshot registry is columnar** — one array per column instead of one
+  object per snapshot (section 2.3).
+* **`meta.generated` is now the build stamp** and `meta.dataAsOf` carries what
+  `generated` used to hold (section 2).
+
+All three exist because the corpus reached 185,926 post rows across 78
+organisations and the first paint hit 92.1 KB gzipped against a 70 KB budget.
+Columnar took it to **49.3 KB**. Nothing about the *data* changed: `cube-prof`
+still aggregates to `cube-core` cell for cell across all ten measures, and the
+cubes still reconcile with `meta.stats` exactly.
+
 All monetary values are **pounds sterling, integer, nominal**. All dates are
 `YYYY-MM-DD`. All timestamps are ISO 8601 UTC.
 
@@ -13,23 +32,32 @@ All monetary values are **pounds sterling, integer, nominal**. All dates are
 
 ## 1. Files
 
-| Path | Loaded | Budget (gz) | Contents |
-|---|---|---|---|
-| `public/data/meta.json` | first paint | 30 KB | dictionaries, organisation registry, snapshot registry, coverage, CPIH, stats |
-| `public/data/cube-core.json` | first paint | 90 KB | Tier A cube: date x org x grade x pay band |
-| `public/data/cube-core-b.json` | lazy | 90 KB | the same cube for Tier B organisations |
-| `public/data/cube-prof.json` | lazy | 250 KB | Tier A cube with profession and the DDaT/policy flags |
-| `public/data/cube-prof-b.json` | lazy | 250 KB | the same for Tier B |
+| Path | Loaded | Budget (gz) | Measured | Contents |
+|---|---|---|---|---|
+| `public/data/meta.json` | first paint | 30 KB | 12.6 KB | dictionaries, organisation registry, snapshot registry, coverage, CPIH, stats |
+| `public/data/cube-core.json` | first paint | 90 KB | 36.7 KB | Tier A cube: date x org x grade x pay band |
+| `public/data/cube-core-b.json` | lazy | 90 KB | 18.1 KB | the same cube for Tier B organisations |
+| `public/data/cube-prof.json` | lazy | 250 KB | 85.0 KB | Tier A cube with profession and the DDaT/policy flags |
+| `public/data/cube-prof-b.json` | lazy | 250 KB | 33.3 KB | the same for Tier B |
 | `public/data/posts/<orgId>.json` | lazy, per organisation | 250 KB each | every published post row for one organisation, columnar |
-| `public/data/changelog.json` | lazy | 20 KB | append-only run record, newest first, capped at 60 |
-| `public/data/highearners.json` | lazy | 250 KB | the two Cabinet Office high-earner publications — section 9 |
-| `public/data/benchmarks.json` | lazy | 40 KB | external comparators (ASHE, ACSES, SSRB, SCS pay bands) — section 10 |
-| `public/data/benchmarks-itjw.json` | lazy | 15 KB | advertised-salary layer. **CC BY-NC-SA 4.0, not OGL** — quarantined, never merged into any other file. Its field-level contract lives inside the JSON itself (`fieldGuide`, `licence`, `gate`, `measure`) |
-| `public/data/ukgwa.json` | lazy | 40 KB | web-archive recovery report for the 2010-2012 era — section 11 |
-| `data/manifest.json` | **never shipped** | — | ingest state and diff baseline; tracked in git, not in `public/` |
-| `data/ukgwa.json` | **never shipped** | — | recovery state and idempotency baseline; tracked in git |
-| `data/benchmarks-review.json` | **never shipped** | — | the approved reading of every figure extracted from a PDF; tracked in git |
-| `data/baseline.json` | **never shipped** | — | `scripts/datadiff.mjs --promote` writes it; the regression guard compares against it |
+| `public/data/changelog.json` | lazy | 20 KB | 1.3 KB | append-only run record, newest first, capped at 60 |
+| `public/data/highearners.json` | lazy | 250 KB | 52.5 KB | the two Cabinet Office high-earner publications — section 9 |
+| `public/data/benchmarks.json` | lazy | 40 KB | 16.2 KB | external comparators (ASHE, ACSES, SSRB, SCS pay bands) — section 10 |
+| `public/data/benchmarks-itjw.json` | lazy | 15 KB | 5.4 KB | advertised-salary layer. **CC BY-NC-SA 4.0, not OGL** — quarantined, never merged into any other file. Its field-level contract lives inside the JSON itself (`fieldGuide`, `licence`, `gate`, `measure`) |
+| `public/data/ukgwa.json` | lazy | 40 KB | 3.3 KB | web-archive recovery report for the 2010-2012 era — section 11 |
+| `data/manifest.json` | **never shipped** | — | — | ingest state and diff baseline; tracked in git, not in `public/` |
+| `data/ukgwa.json` | **never shipped** | — | — | recovery state and idempotency baseline; tracked in git |
+| `data/benchmarks-review.json` | **never shipped** | — | — | the approved reading of every figure extracted from a PDF; tracked in git |
+| `data/baseline.json` | **never shipped** | — | — | `scripts/datadiff.mjs --promote` writes it; the regression guard compares against it |
+
+**There is no `snapshots.json` and the snapshot registry is not lazy.** It reads
+as an obvious candidate — 1,483 entries, and only the Method beat renders the
+package decomposition — but the frontend's period index reads
+`(org, dateIdx, headcount)` out of it to choose one filing per organisation per
+period, and every series on the page is drawn through that choice. Lazy-loading
+it means a page of empty charts until it lands. Columnar it costs 7.0 KB gz of a
+70 KB first paint, so splitting it would buy 2.6 KB and cost the first paint. It
+was measured, not assumed. See section 2.3.
 
 `notable.json` and `cube.json` are **retired**. The ingest deletes them if it
 finds them. Their replacement is `posts/<orgId>.json`, which covers every post
@@ -44,10 +72,17 @@ date as a `dateIdx` in `cube-prof-b.json`. Load `meta.json` first, always.
 
 ```jsonc
 {
-  "schema": 1,
-  "generated": "2026-07-31T14:42:48.990Z", // newest upstream CKAN timestamp in the corpus,
-                                           // NOT the wall clock — two runs from cache are
-                                           // byte-identical, so this is deterministic
+  "schema": 2,
+  "generated": "2026-08-16T07:21:40.477Z", // WHEN THIS BUILD WAS MADE: the timestamp of the
+                                           // run that last CHANGED the payload. A rebuild that
+                                           // changes nothing inherits the previous stamp, so
+                                           // two runs from cache stay byte-identical.
+                                           // This is the date to print beside "built".
+  "dataAsOf": "2026-08-11T15:05:48.973Z",  // HOW CURRENT THE DATA IS: the newest upstream CKAN
+                                           // timestamp in the corpus. Under schema 1 this value
+                                           // lived in `generated`, which is why the page could
+                                           // print "built" over a date five days older than
+                                           // the build.
   "scope": {
     "tier": "ALL" | "A" | "B",
     "only": ["DWP","HMT"] | null,          // --only filter, if any
@@ -66,9 +101,10 @@ date as a `dateIdx` in `cube-prof-b.json`. Load `meta.json` first, always.
                                            // 'Not stated' last. NOT alphabetical.
   "statuses": ["filled-named","filled-undisclosed","vacant","eliminated","redacted","blank"],
   "withheldReasons": ["blank","zero","N/A","implausible","other"],
+  "confidences": ["declared","inferred","default"],  // index space for snapshot `conf`
 
   "coverage":  [ {…}, … ],
-  "snapshots": [ {…}, … ],
+  "snapshots": { … },                      // COLUMNAR since schema 2 — section 2.3
   "cpih":      { … },
   "stats":     { … },
   "warnings":  ["…"]                       // sorted; empty on a clean run
@@ -78,6 +114,14 @@ date as a `dateIdx` in `cube-prof-b.json`. Load `meta.json` first, always.
 `grades` and `profs` contain only the values actually present in this build, in
 the canonical order defined in `scripts/lib.mjs` (`GRADE_BANDS`, `PROFESSIONS`).
 Never hard-code an index; look it up by name.
+
+**`generated` and `dataAsOf` answer different questions and are days apart.**
+Departments publish on their own cadence; the ingest runs on its own. Printing
+the newest upstream timestamp under the word "built" tells a reader the site is
+stale when it is not, and it is the reason a build written on 16 August said
+"built 2026-08-11". `generated` is deterministic despite being a wall clock:
+it is stamped only on a run that changed something, and it is taken *after* the
+content digest so it can never be the reason a run reports itself as changed.
 
 ### 2.1 `orgs[]`
 
@@ -118,9 +162,43 @@ One row per organisation in this build.
 | `headcount` | int | `posts` minus eliminated posts |
 | `disclosed` | int | posts in `headcount` with a published pay band |
 
-### 2.3 `snapshots[]`
+### 2.3 `snapshots` — the registry, columnar
 
-One row per (organisation, reference date). This is the unit of publication.
+One entry per (organisation, reference date). This is the unit of publication.
+
+Schema 1 shipped it as one object per snapshot. At 1,483 snapshots that cost
+269 KB raw and **19.1 KB gzipped — three quarters of meta.json**, in a file that
+is half the first paint, and most of it was the same 127 CKAN package names
+written out 1,496 times. Columnar with a package dictionary it is 49 KB raw and
+7.0 KB gzipped for identical content.
+
+```jsonc
+"snapshots": {
+  "n": 1483,
+  "pkgs":  ["organogram-audit-commission", …],   // dictionary for parts.pkg
+  "bases": ["url-month","url","upload-stamp","resource-name"],  // dictionary for parts.basis
+
+  // one value per snapshot, all of length n
+  "org":       [ 40, … ],   // index into meta.orgs — NOT an id string
+  "d":         [  0, … ],   // index into meta.dates
+  "conf":      [  1, … ],   // index into meta.confidences
+  "rows":      [ 22, … ],
+  "headcount": [ 22, … ],
+  "disclosed": [ 14, … ],
+  "partCount": [  1, … ],   // how many CKAN packages were summed into this snapshot
+
+  // flat, in snapshot order: snapshot i owns the next partCount[i] entries.
+  // Total length is the sum of partCount — 1,496 for 1,483 snapshots.
+  "parts": {
+    "pkg":   [ 0, … ],      // index into pkgs
+    "rows":  [ 22, … ],
+    "conf":  [ 1, … ],      // index into meta.confidences
+    "basis": [ 0, … ]       // index into bases
+  }
+}
+```
+
+Decoded, one snapshot carries exactly what schema 1 carried:
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -134,6 +212,28 @@ One row per (organisation, reference date). This is the unit of publication.
 | `parts[].pkg` | string | CKAN package name — the sub-organisation identity |
 | `parts[].rows` | int | rows contributed by that package |
 | `parts[].conf`, `parts[].basis` | string | how that part's reference date was resolved |
+
+Walking the parts of snapshot `i` means keeping a running offset; there is no
+per-snapshot start index, because storing one would cost more than it saves:
+
+```js
+let k = 0;
+for (let i = 0; i < s.n; i++) {
+  for (let j = 0; j < s.partCount[i]; j++, k++) {
+    s.pkgs[s.parts.pkg[k]];        // the package name
+  }
+}
+```
+
+`src/data.ts` does this once at load and hands every consumer the decoded
+`Snapshot[]`; nothing above the data layer sees the encoding.
+
+**This block is in `meta.json` and not in a lazy file of its own.** It is the
+one part of the first paint that looks most like a lazy layer, and it is not
+one: the period index reads `org`, `d` and `headcount` to choose one filing per
+organisation per period, and every series on the page is drawn through that
+choice. Fetching it lazily means the reader watches an empty page while it
+arrives. At 7.0 KB gzipped of a 70 KB budget, that is not a trade worth making.
 
 A snapshot is the **sum of sibling packages** for one department and reference
 date. MOD publishes under eight packages (the department, three museums, MSHQ,
@@ -198,31 +298,65 @@ If `live` is `false` the run fell back to the built-in table: surface
 ## 3. The cubes
 
 `cube-core.json`, `cube-core-b.json`, `cube-prof.json`, `cube-prof-b.json` all
-share one shape:
+share one shape. Since schema 2 it is **columnar**: one array per column, not
+one array per cell.
 
 ```jsonc
 {
-  "schema": 1,
+  "schema": 2,
+  "layout": "columnar",
   "grain":  ["dateIdx","orgIdx","gradeIdx","binLow","binHigh"],
   "fields": ["n","withheld","vacant","eliminated","fteSum","fteKnown",
              "sumFloorRes","sumCeilRes","billLowRes","billHighRes"],
+  "encoding": {                              // section 3.3 — assert these before decoding
+    "binHigh":  "binLow + v",
+    "fteKnown": "n + withheld + v",
+    "fteSum":   "(fteKnown * 100 + v) / 100"
+  },
   "binWidth": 5000,
   "tier": "A",
-  "rows": [ [ …grain…, …fields… ], … ]
+  "n": 11936,                                // cells; every column has exactly this length
+  "cols": {
+    "dateIdx": [0,0,0,…], "orgIdx": […], "gradeIdx": […],
+    "binLow":  […],       "binHigh": […],
+    "n": […], "withheld": […], "vacant": […], "eliminated": […],
+    "fteSum": […], "fteKnown": […],
+    "sumFloorRes": […], "sumCeilRes": […], "billLowRes": […], "billHighRes": […]
+  }
 }
 ```
 
-All four files are always written, with `rows: []` when the run contained no
-organisation of that tier. `tier` states which population the file holds.
+`cols` carries the grain columns then the field columns, in the order `grain`
+and `fields` declare them. **Every value is an integer** — under schema 1
+`fteSum` was the one float in the file.
+
+All four files are always written, with `n: 0` and empty column arrays when the
+run contained no organisation of that tier. `tier` states which population the
+file holds.
 
 `cube-prof*` has the wider grain
 `["dateIdx","orgIdx","gradeIdx","profIdx","ddat","pol","binLow","binHigh"]`.
 `ddat` and `pol` are 0/1 flags. Everything else is identical, and the two cubes
 agree: aggregating `cube-prof` over profession, `ddat` and `pol` reproduces
-`cube-core` exactly.
+`cube-core` exactly — 18,350 cells, all ten measures, no tolerance.
 
-Rows are sorted ascending by the grain columns. Two runs from cache produce
-byte-identical files.
+Cells are ordered ascending by the grain columns, so `cols.dateIdx` is
+non-decreasing and cell `i` is the same cell in every column. Two runs from
+cache produce byte-identical files.
+
+**Why columnar.** The key columns are sorted and the measure columns are mostly
+zeros, so gzip sees long runs of one token instead of fifteen different tokens
+repeating every row. Measured on `cube-core.json` at full scope:
+
+| Encoding | Raw | Gzipped |
+|---|---|---|
+| schema 1 — one array per cell | 464 KB | 68.1 KB |
+| one array per column | 440 KB | 52.9 KB |
+| + the three residuals in 3.3 | 414 KB | **36.7 KB** |
+
+Delta-encoding the leading sorted key column was measured too: `dateIdx` already
+gzips to 426 bytes and the delta saved 184 bytes across the whole file, so it is
+**not** done. A decode step is not worth a rounding error.
 
 ### 3.1 Pay bands
 
@@ -235,8 +369,9 @@ floor and pay ceiling respectively. Two sentinel values replace a band index:
 | `-2` | **Open band** — exactly ONE of the two edges was published. | counts in `n` | all zero |
 
 The `-2` bucket exists because copying the published edge onto the missing one
-states a floor the department never published. 110 rows in the corpus publish a
-ceiling with no floor. They are real disclosures and are counted as such, but
+states a floor the department never published. 273 rows in the corpus publish
+one edge only — 161 a floor with no ceiling, 112 a ceiling with no floor. They
+are real disclosures and are counted as such, but
 **no money total may include them** — `sumFloor`, `sumCeil`, `billLow` and
 `billHigh` are all zero in that bucket, and the exact published edge survives
 verbatim in the post shard's `floor`/`ceil` columns. `meta.stats.openBand`
@@ -246,8 +381,8 @@ carries the corpus-wide count so a consumer can state it.
 `binLow < 0`. Any statistic over headcount, FTE, grade mix or disclosure rate
 must include them.
 
-Published senior pay is a `(floor, ceiling)` band £5,000 wide — 41,917 of
-44,489 pay rows span exactly £4,999, and even above £150,000 only 105 of 2,602
+Published senior pay is a `(floor, ceiling)` band £5,000 wide — 59,949 of
+62,691 pay rows span exactly £4,999, and even above £150,000 only 131 of 4,621
 rows are exact. **There is no midpoint in this data and none is emitted.** A
 band of £145,000–£149,999 and a band of £150,000–£154,999 sit either side of a
 line the data cannot resolve, so "posts over £150k" is a **range**, not a count:
@@ -284,11 +419,45 @@ disclosed subset is a median of a different population. Offer a
 grade-reweighted median — the disclosed distribution projected onto the
 published grade mix — alongside the raw one.
 
-### 3.3 Decoding the four money residuals
+### 3.3 Decoding the three structural residuals
+
+Three columns are stored as differences from what the cell already states,
+because the difference is zero in the great majority of cells and gzip is very
+good at that. **Read these three columns raw and you get wrong numbers, not an
+error**, so `cube.encoding` ships the formulas and `src/data.ts` refuses to
+decode a file whose formulas do not match the ones it was built against.
+
+| Column | Stored | Decode | Zero in |
+|---|---|---|---|
+| `binHigh` | `binHigh − binLow` | `binLow + v` | 11,766 of 11,936 cells |
+| `fteKnown` | `fteKnown − (n + withheld)` | `n + withheld + v` | 11,909 of 11,936 |
+| `fteSum` | `round(fteSum × 100) − 100 × fteKnown` | `(fteKnown × 100 + v) / 100` | 9,070 of 11,936 |
+
+```js
+const binLow   = cols.binLow[i];
+const binHigh  = binLow + cols.binHigh[i];
+const n        = cols.n[i];
+const withheld = cols.withheld[i];
+const fteKnown = n + withheld + cols.fteKnown[i];
+const fteSum   = (fteKnown * 100 + cols.fteSum[i]) / 100;
+```
+
+Each residual encodes a fact about the corpus. `binHigh − binLow` is zero
+because a published band is £5,000 wide and aligned, so the two bin indices are
+almost always the same — and for the two sentinels (section 3.1) both edges
+carry the same value, so it is zero there too. `fteKnown − (n + withheld)` is
+zero because a department that publishes FTE at all publishes it for every post
+in the cell. `fteSum` counted in hundredths against `100 × fteKnown` is zero
+because almost every post is exactly 1.0 FTE.
+
+Order matters: `fteSum` decodes off the *decoded* `fteKnown`, not the stored one.
+
+### 3.4 Decoding the four money residuals
 
 The bin edges already imply the band, and almost every post is exactly 1.0 FTE,
-so the absolute sums are stored as differences from what the row already tells
-you. In the overwhelming majority of cells all four are `0`. Reconstruct:
+so the absolute sums are stored as differences from what the cell already tells
+you. In the overwhelming majority of cells all four are `0`. Reconstruct, using
+the `binHigh` and `n` **already decoded in 3.3**:
 
 ```js
 const BIN = cube.binWidth;                  // 5000
@@ -306,48 +475,59 @@ FTE-weighted with vacant posts removed, which is the honest range for a pay
 bill. There is deliberately no single `bill` number: producing one requires a
 midpoint.
 
-### 3.4 Worked example — one cube cell
+### 3.5 Worked example — one cube cell
 
-Row from `cube-core.json` (Tier A):
+A cell is a **position `i`, read across every column**. This is cell `i = 0` of
+the current `cube-core.json` (Tier A), taken verbatim from the build:
 
-```json
-[0, 1, 0, 36, 36, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0]
-```
-
-Read against `grain` then `fields`:
-
-| Position | Field | Value | Meaning |
+| Column | Stored | Decoded | Meaning |
 |---|---|---|---|
-| 0 | `dateIdx` | 0 | `meta.dates[0]` = `2011-03-31` |
-| 1 | `orgIdx` | 1 | `meta.orgs[1].id` = `DWP` |
-| 2 | `gradeIdx` | 0 | `meta.grades[0]` = `SCS4 / Perm Sec` |
-| 3 | `binLow` | 36 | floor bin → £180,000 |
-| 4 | `binHigh` | 36 | ceiling bin → £180,000–£184,999 |
-| 5 | `n` | 1 | one post, pay disclosed |
-| 6 | `withheld` | 0 | |
-| 7 | `vacant` | 0 | |
-| 8 | `eliminated` | 0 | |
-| 9 | `fteSum` | 1 | |
-| 10 | `fteKnown` | 1 | FTE known for that one post |
-| 11–14 | residuals | 0,0,0,0 | band-aligned, 1.0 FTE |
+| `dateIdx` | 0 | 0 | `meta.dates[0]` = `2010-06-30` |
+| `orgIdx` | 1 | 1 | `meta.orgs[1].id` = `HMT` |
+| `gradeIdx` | 0 | 0 | `meta.grades[0]` = `SCS4 / Perm Sec` |
+| `binLow` | 30 | 30 | floor bin → £150,000 |
+| `binHigh` | **0** | 30 | `binLow + 0` → ceiling bin 30 → £150,000–£154,999 |
+| `n` | 1 | 1 | one post, pay disclosed |
+| `withheld` | 0 | 0 | |
+| `vacant` | 0 | 0 | |
+| `eliminated` | 0 | 0 | |
+| `fteSum` | **0** | 1.0 | `(1 × 100 + 0) / 100` |
+| `fteKnown` | **0** | 1 | `n + withheld + 0` = `1 + 0 + 0` |
+| `sumFloorRes` | 0 | — | |
+| `sumCeilRes` | 0 | — | |
+| `billLowRes` | 0 | — | |
+| `billHighRes` | 0 | — | |
 
-Decoded: on 31 March 2011 DWP published one SCS4 / Permanent Secretary post,
-pay disclosed, in the £180,000–£184,999 band, 1.0 FTE.
-`sumFloor = 0 + 1×36×5000 = 180,000`;
-`sumCeil = 0 + 1×(36×5000 + 4,999) = 184,999`;
-`billLow = 0 + 180,000`; `billHigh = 0 + 184,999`.
+Note the three zeros in bold. Under schema 1 they were `30`, `1` and `1`; the
+cell says exactly the same thing either way.
 
-A withheld cell from the same date and organisation:
+Decoded: on 30 June 2010 HM Treasury published one SCS4 / Permanent Secretary
+post, pay disclosed, in the £150,000–£154,999 band, 1.0 FTE.
+`sumFloor = 0 + 1×30×5000 = 150,000`;
+`sumCeil = 0 + 1×(30×5000 + 4,999) = 154,999`;
+`billLow = 0 + 150,000`; `billHigh = 0 + 154,999`.
 
-```json
-[0, 1, 2, -1, -1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0]
-```
+A withheld cell from the same date and organisation — cell `i = 7`:
 
-`gradeIdx` 2 = `SCS2 (Dir)`, `binLow`/`binHigh` = −1, `n` = 0, `withheld` = 1:
-one SCS2 post published with its pay withheld. It is in the headcount and in
-the grade mix; it is not in any pay statistic. Dropping rows like this one is
-what inverted the shipped grade mix (SCS1 read 36.9% against a published
-population of 61.4%) and lifted every median by roughly £15,000–£20,000.
+| Column | Stored | Decoded |
+|---|---|---|
+| `dateIdx`, `orgIdx`, `gradeIdx` | 0, 1, 2 | `2010-06-30`, `HMT`, `SCS2 (Dir)` |
+| `binLow` | −1 | −1 — pay not disclosed |
+| `binHigh` | 0 | −1 + 0 = −1 — **both sentinels match, so the residual is 0** |
+| `n` | 0 | 0 |
+| `withheld` | 2 | 2 |
+| `fteKnown` | **−2** | `0 + 2 + (−2)` = 0 — no FTE published for either post |
+| `fteSum` | 0 | `(0 × 100 + 0) / 100` = 0 |
+
+Two SCS2 posts published with their pay withheld, and with no FTE. They are in
+the headcount and in the grade mix; they are in no pay statistic. Dropping rows
+like these is what inverted the shipped grade mix (SCS1 read 36.9% against a
+published population of 61.4%) and lifted every median by roughly
+£15,000–£20,000.
+
+This is also the one cell shape where a residual is negative: `fteKnown` is
+below `n + withheld` exactly when a department published posts without
+publishing their FTE.
 
 ---
 
@@ -358,7 +538,7 @@ organisations the user has selected.
 
 ```jsonc
 {
-  "schema": 1,
+  "schema": 2,
   "org": "WO",
   "n": 20,                      // rows; every column array has exactly this length
   "cols": ["date","pkg","suborg","unit","title","rawGrade","band","variant",
@@ -466,7 +646,9 @@ change rather than a record of cron.
 
 ```jsonc
 {
-  "run": "2026-09-03T06:00:12Z",       // wall clock — the only non-deterministic value shipped
+  "run": "2026-09-03T06:00:12Z",       // wall clock. Deterministic anyway: a no-op run appends
+                                       // nothing, so this only moves when the payload does.
+                                       // meta.generated carries the newest value of this field
   "gitSha": "b16c0794bf6a",
   "scope": { … },                      // same shape as meta.scope
   "snapshotsBefore": 537, "snapshotsAfter": 549,
@@ -495,8 +677,10 @@ baseline. Not in `public/`: it is state, not payload.
 
 ```jsonc
 {
-  "schema": 1,
-  "digest": "<sha256 of every emitted payload>",   // drives "did anything change"
+  "schema": 2,
+  "digest": "<sha256 of every emitted payload>",   // drives "did anything change". Taken with
+                                                   // meta.generated still unset, so the build
+                                                   // stamp can never make a run look changed
   "scope":  { … },
   "stats":  { … },                                  // identical to meta.stats
   "dates":  ["2010-06-30", …],
@@ -581,7 +765,11 @@ month against a normal rate of 1–4.
     (≥500 snapshots, ≥40,000 disclosed posts, ≥24 organisations, ≥160 dates on a
     full-scope run). A failed floor leaves the previous build untouched and
     exits 2.
-12. **Two runs from cache are byte-identical.**
+12. **Two runs from cache are byte-identical.** Every emitted file, checked with
+    `sha256sum -c`. This holds even though `meta.generated` is a wall clock: the
+    content digest is taken with `generated` still unset, so a run that changes
+    nothing is recognised as unchanged and inherits the previous stamp instead
+    of writing its own.
 
 ---
 

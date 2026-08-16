@@ -68,10 +68,11 @@
   --line-strong: rgba(26, 16, 8, 0.16);
   --line-title: var(--text-primary);         /* 2px, page h1 only */
 
-  /* Deprecated back-compat aliases. src/tab-records.ts:73 and :119 still write
-     `var(--card-border)` into inline styles; deleting the name would silently
-     remove those borders. Retire once those two inline styles move to classes.
-     app.css keeps the same pair for the same reason. */
+  /* Deprecated back-compat aliases. They were kept alive for inline styles in
+     src/tab-records.ts, which was deleted when its figures were ported into
+     main.ts. Both names are now referenced nowhere in src/ and are safe to
+     delete; left in place only so that removal is a deliberate commit rather
+     than a drive-by on a ship day. app.css keeps the same pair. */
   --card-border: var(--line-strong);
   --divider: var(--line-hair);
 
@@ -171,12 +172,13 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { color: var(--accent-hover); }
 ::selection { background: var(--accent-tint-25); color: var(--text-primary); }
 
-/* 16px floor on every text-entry control. Two controls are still styled inline
-   from src/tab-records.ts (:73 at 13px, :119 at 12px) and an inline declaration
-   beats a class, so this is the one place !important is warranted: it can only
-   raise a size, and a sub-16px control force-zooms mobile Safari on focus.
-   Drop the !important once those two move to classes. Buttons are excluded —
-   the 12px mono chip label is deliberate and non-zooming. */
+/* 16px floor on every text-entry control. The two sub-16px inline styles this
+   was written against lived in src/tab-records.ts, which has been deleted, so
+   nothing in src/ currently needs the override. It is kept as a floor rather
+   than a patch: it can only raise a size, an inline declaration would beat a
+   plain class again, and a sub-16px control force-zooms mobile Safari on focus.
+   Buttons are excluded — the 12px mono chip label is deliberate and
+   non-zooming. */
 input:not([type='checkbox']):not([type='radio']),
 select,
 textarea {
@@ -801,3 +803,306 @@ body.sheet-open { overflow: hidden; }
   .fs-pull p { font-size: 22px; }
   .fs-numeral { font-size: 52px; }
 }
+
+/* ============================================================
+   Beat modules — the field-study beats. Written for the four
+   src/tab-*.ts renderers, which were retired when their figures
+   were ported into src/main.ts; every rule below is still used
+   from there. Structural only: every colour is an existing token.
+   ============================================================ */
+
+/* The kit's serif headings must not inherit the global uppercase display rule
+   for h1/h2/h3. A reading serif set in caps is not the field-study voice, and
+   .fs-h1 overrode the family without overriding the transform. */
+.fs-h1,
+.fs-h1--display,
+.fs-h2 { text-transform: none; }
+
+.fs-h2 {
+  font-family: var(--fs-serif);
+  font-weight: 600;
+  font-size: var(--fs-display-xs);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* A figure is a page element, not a card: rules top and bottom, no box. */
+.fs-figure > .card-head { margin-bottom: 10px; }
+.fs-figure > .fs-provenance:first-of-type { margin-top: 14px; }
+
+/* ---- coverage matrix ----
+   THREE COUNTABLE STATES. A continuous ramp cannot do this job: its lightest
+   step measures 1.11:1 against the card and is indistinguishable from a null
+   cell, so "did not file" and "filed a handful" read identically — the one
+   thing the matrix exists to show. */
+.covmatrix {
+  display: grid;
+  gap: 1px;
+  background: var(--line-hair);
+  border: 1px solid var(--line-strong);
+  min-width: max-content;
+}
+.covmatrix .cov-head,
+.covmatrix .cov-name {
+  background: var(--surface-card);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-xs);
+  color: var(--text-muted);
+  padding: 3px 6px;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+.covmatrix .cov-head { text-align: center; }
+.covmatrix .cov-name { text-align: left; position: sticky; left: 0; z-index: 1; }
+.covmatrix .cov-cell { min-height: 17px; }
+/* Empty is a different state, not a light value: sunken surface plus a hairline. */
+.covmatrix .cov-cell.empty {
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-hair);
+}
+
+/* ---- pay-trajectory sparkline (one per post in the ledger) ---- */
+.sparkline { display: block; width: 104px; height: 24px; }
+
+/* ---- beat form controls: 16px floor, tokenised chrome ---- */
+.beat-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.beat-field {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  padding: 7px 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border-radius: var(--radius-sharp);
+  min-width: 0;
+}
+.beat-field:hover { border-color: var(--accent); }
+/* Status / progress line inside a beat. NB the shell also declares a
+   `.beat-progress`, uppercase mono and white-space:nowrap, for its own short
+   status chips; this one carries a sentence, so it has its own name rather
+   than fighting the cascade. */
+.beat-status {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-xs);
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  white-space: normal;
+  min-width: 0;
+}
+.beat-status > * { min-width: 0; }
+
+/* Small-multiple lattice: one shared axis, one ink, one border per edge. */
+.panelgrid > * { padding: 10px 12px 12px; }
+.panelgrid .metric-label { margin-bottom: 4px; }
+
+/* ============================================================
+   FIELD STUDY TEMPLATES — the markup contracts T0-T5 need.
+   APPENDED, nothing above is changed. Everything here is a
+   template slot that the kit describes and this bundle had no
+   CSS for: front matter, position, ledger, instrument furniture.
+   Tokens only. Radii 0 / 2px / 100px. No box-shadow inside a
+   page: the only floating layers remain the toast and the
+   chart tooltip, which already carry --elev-pop.
+   ============================================================ */
+
+/* The tab strip's buttons flow inline at every width; below 700px the
+   grid rule above (which is !important) takes over and makes it 3-up. */
+.tabs > .wrap { display: flex; flex-wrap: wrap; gap: 0; }
+
+/* ——— beat shell ——— */
+.beat { padding: 26px 0 64px; }
+.beat-progress { font-family: var(--font-mono); font-size: var(--fs-label-xs); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-ghost); white-space: nowrap; }
+.fs-numeral-col { display: flex; flex-direction: column; gap: 20px; }
+.fs-standfirst { font-family: var(--fs-serif); font-size: var(--fs-body-lg); line-height: 1.5; color: var(--text-secondary); max-width: 62ch; margin: 16px 0 0; }
+.fs-subhead { font-family: var(--font-mono); font-size: var(--fs-label-xs); font-weight: 500; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-ghost); margin: 30px 0 10px; }
+.fs-sources { list-style: none; margin: 0; padding: 0; }
+.fs-sources li { padding: 10px 0; border-bottom: 1px solid var(--line-hair); font-size: var(--fs-label); color: var(--text-secondary); display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; }
+.fs-sources .n { font-family: var(--font-mono); font-size: var(--fs-label-xs); color: var(--accent); }
+
+/* ——— T0 front matter ——— */
+.fs-frontmatter { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 34px; align-items: start; }
+.fs-thesis { font-family: var(--fs-serif); font-size: var(--fs-body-lg); line-height: 1.55; color: var(--text-secondary); max-width: 60ch; margin: 18px 0 0; }
+.fs-status { border: 1px solid var(--line-strong); background: var(--surface-card); padding: 15px 17px; display: flex; flex-direction: column; gap: 9px; }
+.fs-ledger { border-top: 2px solid var(--line-title); margin-top: 30px; }
+.fs-ledger-row { display: grid; grid-template-columns: 136px minmax(0, 1fr) auto; gap: 18px; align-items: baseline; padding: 15px 0; border-bottom: 1px solid var(--line-hair); }
+.fs-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 30px; margin-top: 30px; }
+.fs-split > * + * { border-left: 1px solid var(--line-strong); padding-left: 30px; }
+.fs-numlist { list-style: none; margin: 0; padding: 0; counter-reset: ask; }
+.fs-numlist li { counter-increment: ask; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line-hair); color: var(--text-secondary); font-size: var(--fs-body-sm); }
+.fs-numlist li::before { content: counter(ask, decimal-leading-zero); font-family: var(--font-mono); font-size: var(--fs-label-xs); color: var(--accent); }
+.fs-contents-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 14px; width: 100%;
+  padding: 10px 0; border: 0; border-bottom: 1px solid var(--line-hair); background: none; cursor: pointer;
+  text-align: left; font-family: var(--font-body); font-size: var(--fs-body-sm); color: var(--text-secondary);
+  transition: color var(--t-fast) var(--ease-out);
+}
+.fs-contents-row:hover { color: var(--accent); }
+.fs-contents-row .no { font-family: var(--font-mono); font-size: var(--fs-label-xs); color: var(--text-ghost); }
+.fs-contents-row .mins { font-family: var(--font-mono); font-size: var(--fs-label-xs); color: var(--text-ghost); white-space: nowrap; }
+.fs-disclaimer { font-size: var(--fs-label); color: var(--text-muted); max-width: 66ch; margin-top: 26px; }
+
+/* ——— T3 position ——— */
+.fs-position { font-family: var(--fs-serif); font-weight: 600; font-size: clamp(28px, 4.4vw, 46px); line-height: 1.06; letter-spacing: -0.03em; max-width: 20ch; margin: 20px 0 0; }
+.fs-confidence-note { border-left: 3px solid var(--accent); padding: 6px 0 6px 16px; margin: 20px 0 0; color: var(--text-secondary); font-size: var(--fs-body-sm); max-width: 66ch; }
+.fs-because { background: var(--accent-tint-08); border-top: 1px solid var(--accent-tint-25); border-bottom: 1px solid var(--accent-tint-25); margin-top: 26px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fs-because > * { padding: 18px 20px; }
+.fs-because > * + * { border-left: 1px solid var(--accent-tint-25); }
+.fs-rejected { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--line-hair); }
+.fs-panel { border: 1px solid var(--line-strong); padding: 15px 17px; }
+.fs-panel ul, .fs-warn ul { margin: 8px 0 0; padding-left: 18px; }
+.fs-panel li, .fs-warn li { margin: 6px 0; color: var(--text-secondary); font-size: var(--fs-body-sm); }
+
+/* ——— T4 ledger ——— */
+.fs-ledger-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px; margin-top: 24px; }
+.fs-col-benefit { border-top: 2px solid var(--accent-ink); padding-top: 14px; }
+.fs-col-risk { border-top: 2px solid var(--fs-contested); padding-top: 14px; }
+.fs-ledger-item { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line-hair); }
+.fs-ledger-item .no { font-family: var(--font-mono); font-size: var(--fs-label-xs); color: var(--text-ghost); }
+.fs-balance { font-family: var(--fs-serif); font-size: 20px; line-height: 1.5; margin-top: 22px; max-width: 62ch; text-wrap: pretty; }
+.fs-lens { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 18px; }
+
+/* ——— T5 instrument ———
+   A control surface, not an editorial page: mono throughout, HUDs floating
+   over the stage, limits always visible above the fold of the stage. The
+   height is bounded by the viewport MINUS the two sticky bars, so the
+   transport is never hidden behind the tab strip. */
+.beat .fs-instrument { height: calc(100svh - var(--topbar-h) - var(--tabs-h) - 26px); min-height: 520px; margin-top: 22px; }
+.fs-cmdbar {
+  position: absolute; z-index: 5; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 14px;
+  padding: 9px 16px; background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line-strong);
+}
+.fs-cmdbar .spacer { flex: 1; }
+.fs-live { display: inline-flex; align-items: center; gap: 7px; font-size: var(--fs-label-xs); color: var(--text-secondary); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fs-live .dot { width: 7px; height: 7px; border-radius: var(--radius-pill); background: var(--accent); flex: none; }
+.fs-stage { position: absolute; top: 52px; left: 262px; right: 232px; bottom: 92px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.fs-hud--levers { top: 58px; left: 16px; width: 230px; max-height: calc(100% - 168px); overflow-y: auto; overscroll-behavior: contain; }
+.fs-hud--readout { top: 58px; right: 16px; width: 200px; }
+.fs-hud-body { padding: 11px 12px; display: flex; flex-direction: column; gap: 14px; }
+.fs-hud-toggle { background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--font-mono); font-size: var(--fs-label-xs); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--accent); }
+.fs-lever-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.fs-baseline { font-family: var(--font-mono); font-size: var(--fs-label-xs); color: var(--text-ghost); margin-top: 6px; }
+.fs-baseline.moved { color: var(--accent); }
+.fs-readout { grid-template-columns: minmax(0, 1fr); }
+.fs-limits { flex-direction: column; align-items: stretch; gap: 6px; max-height: 84px; overflow-y: auto; overscroll-behavior: contain; }
+.fs-limits .row { display: flex; flex-wrap: wrap; gap: 3px 16px; font-family: var(--font-mono); font-size: var(--fs-label-xs); color: var(--text-secondary); }
+.fs-limits .row b { color: var(--text-primary); font-weight: 500; }
+.fs-limits .note { font-family: var(--font-body); font-size: var(--fs-label-xs); line-height: 1.45; color: var(--text-muted); }
+
+/* Below 1000px the instrument stops being a fixed control surface and
+   becomes flow, in the order the phone needs: state -> readout -> chart ->
+   limits -> one collapsed Filters disclosure. That is the DOM order, so no
+   reordering is required and nothing is hidden behind anything. */
+@media (max-width: 1000px) {
+  .beat .fs-instrument { height: auto; min-height: 0; }
+  .fs-cmdbar, .fs-stage, .fs-hud, .fs-transport {
+    position: static; inset: auto; width: auto; max-height: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .fs-hud, .fs-transport { border-left: 0; border-right: 0; }
+  .fs-hud--levers { border-bottom: 0; }
+  .fs-stage { padding: 12px 12px 4px; }
+}
+@media (max-width: 900px) {
+  .fs-frontmatter, .fs-split, .fs-because, .fs-ledger-cols, .fs-rejected { grid-template-columns: minmax(0, 1fr); }
+  .fs-split > * + *, .fs-because > * + * { border-left: 0; padding-left: 0; border-top: 1px solid var(--line-strong); padding-top: 18px; }
+  .fs-ledger-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .fs-split { gap: 18px; }
+}
+
+/* A wide table must scroll inside its own box, never take the page sideways
+   with it. `overflow-x: auto` also drops the element's min-content contribution
+   to zero, which is what stops a six-column survey widening the grid track it
+   sits in — at 390px the estate table was making the whole beat 556px wide. */
+.fs-table-wrap { overflow-x: auto; overscroll-behavior-x: contain; }
+.fs-table-wrap .fs-table { min-width: 100%; }
+@media (max-width: 900px) {
+  /* belt and braces on the same failure: a 1fr track still sizes to
+     min-content, so name the floor explicitly. */
+  .fs-spread { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* The base sheet uppercases every h1/h2/h3 for the display face. A field-study
+   heading is set in the reading serif and must NOT be uppercased — T3's
+   position display is a sentence, not a stamp. */
+.fs-h1, .fs-position, .fs-thesis { text-transform: none; }
+
+/* The depth control is rendered twice and switched here, not by a JS
+   breakpoint: a third item in the sticky bar at 390px turned it into three
+   lines of broken words, which is the exact failure the topbar rule above
+   already fixes for the strapline. */
+.depth-inline { display: none; }
+@media (max-width: 620px) {
+  .depth-top { display: none; }
+  .depth-inline { display: flex; margin-bottom: 14px; }
+}
+
+/* Anchor scrolling under two sticky bars: without this, jumping to the
+   instrument parks its command bar behind the tab strip. */
+.beat .fs-instrument, .fs-figure, [id] { scroll-margin-top: calc(var(--topbar-h) + var(--tabs-h) + 12px); }
+
+/* Cap the control surface so a very tall window does not leave a hole between
+   the stage and the transport. */
+@media (min-width: 1001px) {
+  .beat .fs-instrument { height: clamp(520px, calc(100svh - var(--topbar-h) - var(--tabs-h) - 26px), 860px); }
+}
+
+/* ---- contrast floor on prose and navigation set in the ghost tone ----
+   --text-ghost composites to about 2.8:1 against the cream, which is fine for
+   a mono eyebrow but not for a sentence anyone has to read or a link anyone
+   has to click. The falsifier is the most load-bearing line of every beat's
+   close, and .fs-prev is the back link; both move to --text-muted (5.2:1).
+   Declared here as an override rather than edited in place, so the canonical
+   token block above stays exactly as it was rebuilt. */
+.fs-falsifier { color: var(--text-muted); }
+.fs-prev { color: var(--text-muted); }
+
+/* The readout tile can now carry a one-line caveat under its figure (for
+   example "1 -> 6 bodies filing"). It must wrap rather than push the tile
+   wider, and must not be mistaken for another number. */
+.fs-readout .fs-baseline { margin-top: 4px; white-space: normal; line-height: 1.35; }
+
+/* ---- the instrument's caveats, in flow rather than in the transport ----
+   The transport is a fixed 84px band inside a fixed-height instrument. Any
+   caveat longer than two lines was silently clipped there, which is the exact
+   opposite of what a limits strip is for. The terse metric row stays in the
+   strip; the prose sits underneath the instrument at the study's own measure. */
+.fs-instrument-notes {
+  margin: 14px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--line-strong);
+  max-width: 74ch;
+}
+.fs-instrument-notes .fs-body { margin: 6px 0 0; font-size: var(--fs-label); }
+.fs-instrument-notes .fs-body + .fs-body { margin-top: 8px; color: var(--text-muted); }
+
+/* ---- topbar: the mark and the action never break ----
+   The 620px rule below fixed the phone. Between 620px and 1000px the brand was
+   still wrapping to "scs / pay" inside a fixed 60px bar, with the strap on two
+   lines beside it — the same broken-words failure one breakpoint up. The mark
+   and the button hold their line at every width; the strap is the elastic item
+   and truncates instead of wrapping, and the depth control stays on one row. */
+.brand, .share-btn { white-space: nowrap; }
+.topbar .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.depth-top { flex-wrap: nowrap; flex-shrink: 0; }
+
+/* The lever HUD and the limits strip scroll inside themselves. Without a
+   persistent track a reader has no way to know there is more below the fold of
+   a 230px panel, so the gutter is reserved rather than overlaid. */
+.fs-hud--levers, .fs-limits { scrollbar-width: thin; scrollbar-gutter: stable; }
+
+/* A confidence chip is a mark on a claim, not a banner across it. Below the
+   findings breakpoint the grid dropped to one column and the chip inherited
+   display:block, stretching to 362px so it read as a section heading. */
+.fs-chip { width: fit-content; max-width: 100%; justify-self: start; }

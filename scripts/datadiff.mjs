@@ -156,14 +156,28 @@ function summarise(dir) {
 // median post falls in, and the comparison is made on its floor. That is
 // deliberately coarse — it moves in £5,000 steps, which is exactly the
 // resolution the data has.
+//
+// Schema 2 ships the cube as one array per column and stores binHigh as a
+// difference from binLow (contract 3). Reading `core.rows` against a schema 2
+// file returns undefined, which this function would have absorbed into an empty
+// object — the median gate would then have passed every build in silence, which
+// is worse than it failing. It reads the columns, and says so if it cannot.
 function mediansByDate(meta, core) {
   const out = {};
-  if (!core?.rows?.length) return out;
+  const c = core?.cols;
+  if (!c?.dateIdx?.length) {
+    if (core && !c) {
+      console.error('datadiff: cube-core.json has neither `cols` nor a recognised layout — '
+        + 'the median gate cannot run. Check docs/DATA-CONTRACT.md section 3.');
+    }
+    return out;
+  }
   const bin = core.binWidth || meta.binWidth || 5000;
   const skip = new Set((meta.grades || []).map((g, i) => (NON_SCS_BANDS.has(g) ? i : -1)).filter(i => i >= 0));
   const byDate = new Map();
-  for (const r of core.rows) {
-    const [dateIdx, , gradeIdx, binLow, binHigh, count] = r;
+  for (let i = 0; i < c.dateIdx.length; i++) {
+    const dateIdx = c.dateIdx[i], gradeIdx = c.gradeIdx[i];
+    const binLow = c.binLow[i], binHigh = binLow + c.binHigh[i], count = c.n[i];
     if (binLow < 0 || !count || skip.has(gradeIdx)) continue;
     if (!byDate.has(dateIdx)) byDate.set(dateIdx, []);
     byDate.get(dateIdx).push([binLow, binHigh, count]);

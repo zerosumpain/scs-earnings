@@ -45,7 +45,15 @@ const CONCURRENCY = 8;
 const FETCH_TIMEOUT = 30000;
 const REVALIDATE_MONTHS = 18;
 const CHANGELOG_CAP = 60;
-const SCHEMA = 1;
+// Schema 2: the cubes and the snapshot registry are columnar. Schema 1 shipped
+// the cubes as one array per cell and the registry as one object per snapshot,
+// which put 92.1 KB gz into a 70 KB first paint once the corpus reached 185,926
+// post rows. See docs/DATA-CONTRACT.md sections 2.3 and 3.
+const SCHEMA = 2;
+
+// The three ways a snapshot's reference date can be resolved, weakest last.
+// Shipped as a dictionary because the snapshot registry indexes into it.
+const REF_CONFIDENCES = ['declared', 'inferred', 'default'];
 
 // ---- CLI ------------------------------------------------------------------
 const ARGV = process.argv.slice(2);
@@ -220,7 +228,9 @@ const CPIH_URL = 'https://www.ons.gov.uk/economy/inflationandpriceindices/timese
 
 // Floor assertions for a full-scope run. Below any of these the corpus is
 // broken, not small: refuse to promote the output. Current values are
-// 537 snapshots / 46,595 disclosed posts / 25 departments / 164 dates.
+// 1,483 snapshots / 62,846 disclosed posts / 78 organisations / 251 dates, so
+// these are a catastrophe guard and nothing finer. Relative movement — a
+// department halving between two runs — is scripts/datadiff.mjs's job.
 const FLOORS = { snapshots: 500, posts: 40000, orgs: 24, dates: 160 };
 
 const log = (...a) => console.log(...a);
@@ -521,6 +531,9 @@ function dictionary() {
 // ---- main ------------------------------------------------------------------
 async function main() {
   const t0 = Date.now();
+  // One wall clock for the whole run, so the changelog entry and the build
+  // stamp in meta.json cannot disagree by a few milliseconds.
+  const runAt = new Date().toISOString();
   await mkdir(CACHE, { recursive: true });
 
   if (ONLY.length) {
@@ -734,13 +747,23 @@ async function main() {
 
   const meta = {
     schema: SCHEMA,
-    generated: dataAsOf(files),
+    // WHEN THIS BUILD WAS MADE. Filled in below, after the content digest and
+    // deliberately outside it: the run that last CHANGED the payload, not the
+    // wall clock of this run. A re-run that changes nothing leaves it alone, so
+    // two runs from cache stay byte-identical AND the page can honestly say
+    // "built <date>" instead of printing the age of the newest upstream file.
+    generated: null,
+    // HOW CURRENT THE DATA IS: the newest upstream CKAN timestamp in the
+    // corpus. This is what `generated` held under schema 1, and conflating the
+    // two is what made every limits strip read "built 2026-08-11" on a build
+    // written today.
+    dataAsOf: dataAsOf(files),
     scope: { tier: TIER, only: ONLY.length ? ONLY : null, maxFiles: MAX_FILES || null, partial: PARTIAL },
     source: {
       name: 'gov.uk organogram of staff roles & salaries (senior posts)',
       via: 'data.gov.uk CKAN',
       licence: 'UK Open Government Licence (OGL)',
-      note: 'Senior pay is published as a (floor, ceiling) band £5,000 wide throughout — including above £150,000, where only 105 of 2,602 rows are exact. Nothing here is an individual salary. Around two thirds of published senior posts have their pay withheld, and withholding is grade-dependent, so pay statistics are computed on the disclosed subset while headcount, FTE and grade mix use the full published population.',
+      note: 'Senior pay is published as a (floor, ceiling) band £5,000 wide throughout — including above £150,000, where only 131 of 4,621 rows are exact. Nothing here is an individual salary. Around two thirds of published senior posts have their pay withheld, and withholding is grade-dependent, so pay statistics are computed on the disclosed subset while headcount, FTE and grade mix use the full published population.',
       cadence: 'Pre-2022 the series was twice-yearly (31 March and 30 September). From 2022 departments publish quarterly to monthly across all twelve months, so a snapshot date can be any month.',
     },
     binWidth: BIN,
@@ -751,8 +774,9 @@ async function main() {
       predecessors: o.predecessors, successors: o.successors,
     })),
     grades, profs, statuses: POST_STATUSES, withheldReasons,
+    confidences: REF_CONFIDENCES,
     coverage,
-    snapshots: snapshotRegistry,
+    snapshots: columnarSnapshots(snapshotRegistry, orgIdx),
     cpih,
     stats: {
       orgs: orgs.length,
@@ -802,6 +826,7 @@ async function main() {
 
   if (DRY_RUN) {
     log('\n[5/5] dry run — nothing written');
+    meta.generated = runAt;
     summarise(meta, t0);
     return;
   }
@@ -814,23 +839,33 @@ async function main() {
 
   const CORE_GRAIN = ['dateIdx', 'orgIdx', 'gradeIdx', 'binLow', 'binHigh'];
   const PROF_GRAIN = ['dateIdx', 'orgIdx', 'gradeIdx', 'profIdx', 'ddat', 'pol', 'binLow', 'binHigh'];
-  const cube = (grain, tier, rows) => ({ schema: SCHEMA, grain, fields: CUBE_FIELDS, binWidth: BIN, tier, rows });
   const payloads = [
     ['meta.json', meta],
-    ['cube-core.json', cube(CORE_GRAIN, 'A', coreRows)],
-    ['cube-core-b.json', cube(CORE_GRAIN, 'B', coreRowsB)],
-    ['cube-prof.json', cube(PROF_GRAIN, 'A', profRows)],
-    ['cube-prof-b.json', cube(PROF_GRAIN, 'B', profRowsB)],
+    ['cube-core.json', columnarCube(CORE_GRAIN, 'A', coreRows)],
+    ['cube-core-b.json', columnarCube(CORE_GRAIN, 'B', coreRowsB)],
+    ['cube-prof.json', columnarCube(PROF_GRAIN, 'A', profRows)],
+    ['cube-prof-b.json', columnarCube(PROF_GRAIN, 'B', profRowsB)],
   ];
   for (const [id, shard] of [...shards.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     payloads.push([path.join('posts', id + '.json'), finaliseShard(shard)]);
   }
 
+  // The digest is taken with meta.generated still null, so the build stamp can
+  // never be the reason a run reports itself as changed.
   const digest = sha256(payloads.map(([n, v]) => n + ':' + JSON.stringify(v)).join('\n'));
   const changed = !previousManifest || previousManifest.digest !== digest;
 
-  const changelog = await buildChangelog(meta, previousManifest, digest, changed, meta.stats.coreCells);
+  const changelog = await buildChangelog(meta, previousManifest, digest, changed, meta.stats.coreCells, runAt);
   if (changelog) payloads.push(['changelog.json', changelog]);
+
+  // Stamp the build. A run that changed something is stamped now; a run that
+  // changed nothing inherits the stamp of the run that did, which is the newest
+  // changelog entry (falling back to the meta.json already on disk if the
+  // changelog was deleted). That is what keeps rule 12 — two runs from cache
+  // are byte-identical — true of a wall-clock field.
+  meta.generated = changed
+    ? runAt
+    : (changelog?.[0]?.run ?? (await readJSON(path.join(OUT, 'meta.json')))?.generated ?? runAt);
 
   const written = [];
   for (const [name, value] of payloads) {
@@ -934,6 +969,101 @@ function serialiseCube(map, keyLen, keep) {
   return rows;
 }
 
+// ---- columnar cube encoding ------------------------------------------------
+// The cube ships as one array per column rather than one array per cell. The
+// key columns are sorted and the measure columns are mostly zeros, so gzip sees
+// long runs of the same token instead of fifteen different tokens repeating
+// every row. Measured on cube-core.json at full scope (11,936 cells):
+//
+//   one array per cell                  464 KB raw   68.1 KB gz
+//   one array per column                440 KB raw   52.9 KB gz
+//   + the three residuals below         424 KB raw   37.6 KB gz
+//
+// Delta-encoding the leading sorted key column was measured too: dateIdx is
+// already 426 bytes gzipped and the delta saved 184 bytes across the whole
+// file, so it is NOT done — a decode step is not worth a rounding error.
+//
+// Three columns are stored as differences from what the row already states,
+// which is the same idea as the four money residuals and for the same reason:
+// the difference is zero in the overwhelming majority of cells. Zero in 11,766
+// of 11,936 for binHigh, 11,909 for fteKnown, 9,070 for fteSum. Every column is
+// an integer — under schema 1 fteSum was the one float in the file.
+//
+// The formulas ship in the file as `encoding` and the frontend asserts them on
+// load, so a change here fails loudly rather than decoding into wrong numbers.
+const CUBE_ENCODING = {
+  binHigh: 'binLow + v',
+  fteKnown: 'n + withheld + v',
+  fteSum: '(fteKnown * 100 + v) / 100',
+};
+
+function columnarCube(grain, tier, rows) {
+  const names = [...grain, ...CUBE_FIELDS];
+  const at = Object.fromEntries(names.map((nm, i) => [nm, i]));
+  const cols = Object.fromEntries(names.map(nm => [nm, new Array(rows.length)]));
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    for (let j = 0; j < names.length; j++) cols[names[j]][i] = r[j];
+    cols.binHigh[i] = r[at.binHigh] - r[at.binLow];
+    cols.fteKnown[i] = r[at.fteKnown] - (r[at.n] + r[at.withheld]);
+    // fte100 is an integer sum in the accumulator; serialiseCube divided it by
+    // 100, so multiplying back and rounding is exact, not a re-derivation.
+    cols.fteSum[i] = Math.round(r[at.fteSum] * 100) - 100 * r[at.fteKnown];
+  }
+  return {
+    schema: SCHEMA, layout: 'columnar',
+    grain, fields: CUBE_FIELDS, encoding: CUBE_ENCODING,
+    binWidth: BIN, tier, n: rows.length, cols,
+  };
+}
+
+// ---- columnar snapshot registry --------------------------------------------
+// 1,483 snapshots shipped as one object each cost 269 KB raw and 19.1 KB gz —
+// 73% of meta.json's gzip, in a file that is half the first paint. Columnar
+// with a package dictionary it is 49 KB raw and 7.0 KB gz, because the 127
+// distinct CKAN package names were being written out 1,496 times.
+//
+// It stays in meta.json rather than moving to a lazy file: the frontend's
+// period index reads (org, dateIdx, headcount) to pick one filing per
+// organisation per period, and every chart on the page is drawn through it. A
+// lazy registry means an empty page until it lands. See the note in section 2.3
+// of the contract.
+//
+// `org` indexes meta.orgs and `d` indexes meta.dates — the same index spaces
+// the cubes use. `conf` indexes meta.confidences. Only `pkg` and `basis` need
+// dictionaries of their own; both are local to this block.
+function columnarSnapshots(registry, orgIdx) {
+  const pkgs = [], pkgIdx = new Map();
+  const bases = [], basisIdx = new Map();
+  const intern = (list, idx, v) => {
+    if (!idx.has(v)) { idx.set(v, list.length); list.push(v); }
+    return idx.get(v);
+  };
+  const out = {
+    n: registry.length,
+    pkgs, bases,
+    org: [], d: [], conf: [], rows: [], headcount: [], disclosed: [], partCount: [],
+    // Flat, in snapshot order: snapshot i owns the next partCount[i] entries.
+    parts: { pkg: [], rows: [], conf: [], basis: [] },
+  };
+  for (const s of registry) {
+    out.org.push(orgIdx.get(s.org));
+    out.d.push(s.d);
+    out.conf.push(REF_CONFIDENCES.indexOf(s.conf));
+    out.rows.push(s.rows);
+    out.headcount.push(s.headcount);
+    out.disclosed.push(s.disclosed);
+    out.partCount.push(s.parts.length);
+    for (const p of s.parts) {
+      out.parts.pkg.push(intern(pkgs, pkgIdx, p.pkg));
+      out.parts.rows.push(p.rows);
+      out.parts.conf.push(REF_CONFIDENCES.indexOf(p.conf));
+      out.parts.basis.push(intern(bases, basisIdx, p.basis));
+    }
+  }
+  return out;
+}
+
 // ---- post shards -----------------------------------------------------------
 // Columnar and dictionary-encoded. Job/Team Function and Notes prose are
 // dropped (they roughly double the size and carry no analysis). Names are
@@ -1025,13 +1155,13 @@ function buildManifest(meta, files, ctx, failures, digest) {
   };
 }
 
-async function buildChangelog(meta, previous, digest, changed, cubeCells) {
+async function buildChangelog(meta, previous, digest, changed, cubeCells, runAt) {
   const existing = (await readJSON(path.join(OUT, 'changelog.json'))) || [];
   if (!changed) return existing.length ? existing : null;
   const prev = previous?.stats || null;
   const prevDates = new Set(previous?.dates || []);
   const entry = {
-    run: new Date().toISOString(),
+    run: runAt,
     gitSha: await headSha(),
     scope: meta.scope,
     snapshotsBefore: prev?.snapshots ?? null, snapshotsAfter: meta.stats.snapshots,
