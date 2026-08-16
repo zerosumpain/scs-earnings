@@ -121,6 +121,19 @@ for (const [w, h] of VIEWPORTS) {
       problems.push(`[${tag}] console: ${m.text().slice(0, 200)}`);
     }
   });
+  // A bare "Failed to load resource: 404" tells an operator nothing at 06:00 on
+  // the third of the month. Record which URL, and ignore third parties, whose
+  // availability is not this app's health.
+  page.on('response', (res) => {
+    const u = res.url();
+    if (res.status() >= 400 && u.startsWith(base)) {
+      problems.push(`[${tag}] HTTP ${res.status()} ${u.slice(base.length) || '/'}`);
+    }
+  });
+  page.on('requestfailed', (req) => {
+    const u = req.url();
+    if (u.startsWith(base)) problems.push(`[${tag}] request failed ${u.slice(base.length)} — ${req.failure()?.errorText}`);
+  });
   page.on('pageerror', (e) => problems.push(`[${tag}] pageerror: ${String(e.message).slice(0, 200)}`));
 
   await page.goto(base, { waitUntil: 'networkidle', timeout: 30000 });
