@@ -1236,3 +1236,24 @@ body.has-fullscreen-instrument .tabs { z-index: 1; }
   .restate-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .restate-row .num { text-align: left; }
 }
+
+/* ——— The reporting tree ———
+   Wide and tall by nature, so it scrolls inside its own frame rather than
+   pushing the page sideways. */
+.orgtree-host {
+  max-height: 620px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  scrollbar-gutter: stable;
+}
+/* No min-width: forcing 100% on an svg with width and height attributes
+   breaks its aspect ratio, and preserveAspectRatio then letterboxes the whole
+   tree into the middle with 200px of dead margin down the left. */
+.orgtree-host svg { display: block; }
+.orgtree-node { cursor: default; }
+.orgtree-node[aria-expanded] { cursor: pointer; }
+.orgtree-node[aria-expanded]:hover rect { stroke-width: 2.5; }
+.orgtree-node:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.orgtree-node.is-match text { font-weight: 500; }

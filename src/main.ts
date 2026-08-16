@@ -36,8 +36,8 @@ import { h, clear, append, esc, rich } from './dom';
 import { type AppState, type Basis, defaultState, readHash, writeHash } from './state';
 import { stateToFilter, pmPayEntry, pmPayFor, PM_PAY_SOURCE, PM_PAY_VERIFIED_TO } from './query';
 import {
-  loadPosts, groupPosts, searchPosts, orgStructure, structureSeriesDetailed,
-  type PostRow, type PostGroup, type PostSort,
+  loadPosts, groupPosts, searchPosts, orgStructure, structureSeriesDetailed, orgTree,
+  type PostRow, type PostGroup, type PostSort, type OrgNode,
 } from './posts';
 import {
   loadBenchmarks, contestedQuantities, honestyRules, excludedSources, staleSources,
@@ -3542,6 +3542,9 @@ function orgStructureBlock(): HTMLElement {
       }));
     }
 
+    // ---- the tree itself
+    body.append(orgTreeFigure(rows, latest.date, orgLabel(id)));
+
     // ---- who supervises the most
     const top = latest.spans.slice(0, 12);
     body.append(card({
@@ -3674,4 +3677,275 @@ function ssrbRestatementBlock(fig: StudyFigure, g: SsrbGap): HTMLElement {
     ],
   }));
   return wrap;
+}
+
+// ---------------------------------------------------------------------------
+// Fig 5.11 — the reporting tree, drawn
+// ---------------------------------------------------------------------------
+//
+// A department's senior hierarchy as the department itself drew it. 341 posts
+// over five layers does not fit on a screen, and a tree that does not fit is a
+// picture of a tree rather than a thing you can read, so this one collapses:
+// it opens two layers deep and every post with reports beneath it can be
+// expanded. Subtree size travels on the collapsed node, so a closed branch
+// still says how much is inside it.
+//
+// Grade drives colour, on the ORDINAL ramp, because grade is a ladder. Pay does
+// not drive anything visual: two thirds of these posts have no published band,
+// and encoding a quantity that most of the marks do not have would draw a
+// picture of who discloses rather than of who earns.
+const TREE_ROW = 22;
+const TREE_INDENT = 26;
+
+function orgTreeFigure(rows: PostRow[], date: string, orgName: string): HTMLElement {
+  const { roots, nodes, orphans } = orgTree(rows, date);
+  const open = new Set<string>();
+
+  // Open the top two layers by default: enough to see the shape, small enough
+  // to read without scrolling into a wall of titles.
+  const seedOpen = (n: OrgNode) => {
+    if (n.depth <= 2 && n.children.length) open.add(n.pur);
+    for (const c of n.children) seedOpen(c);
+  };
+  for (const r of roots) seedOpen(r);
+
+  const host = h('div', { class: 'orgtree-host' });
+  const controls = h('div', { class: 'beat-controls' });
+  const filter = h('input', {
+    class: 'beat-field', type: 'search',
+    placeholder: 'Reveal a post or a name…',
+    'aria-label': 'Find a post or post-holder in the tree',
+    style: { flex: '1 1 220px' },
+  }) as HTMLInputElement;
+  const expandAll = h('button', { class: 'chip', type: 'button' }, ['Expand all']);
+  const collapseAll = h('button', { class: 'chip', type: 'button' }, ['Collapse to the top']);
+  controls.append(filter, expandAll, collapseAll);
+
+  const draw = () => {
+    const q = filter.value.trim().toLowerCase();
+    // A search reveals rather than filters: hiding the unmatched would leave a
+    // hit with no line of report above it, which is the one thing this chart
+    // exists to show.
+    const matched = new Set<string>();
+    if (q) {
+      const walk = (n: OrgNode, chain: OrgNode[]): void => {
+        const hay = `${n.title} ${n.holder ?? ''} ${n.unit ?? ''} ${n.grade}`.toLowerCase();
+        if (hay.includes(q)) {
+          matched.add(n.pur);
+          for (const a of chain) open.add(a.pur);
+        }
+        for (const c of n.children) walk(c, [...chain, n]);
+      };
+      for (const r of roots) walk(r, []);
+    }
+
+    // Flatten to the visible rows, in reading order.
+    const rowsOut: { n: OrgNode; y: number }[] = [];
+    let y = 0;
+    const push = (n: OrgNode) => {
+      rowsOut.push({ n, y });
+      y += TREE_ROW;
+      if (open.has(n.pur)) for (const c of n.children) push(c);
+    };
+    for (const r of roots) push(r);
+
+    const maxDepth = Math.max(...rowsOut.map((r) => r.n.depth), 1);
+    // Two columns: titles indent by depth, metadata sits in a fixed gutter on
+    // the right. Right-aligning the metadata instead let a long grade-plus-name
+    // -plus-band string run back under the title it belonged to.
+    // Size the metadata gutter to the longest string it has to hold, rather
+    // than guessing: a fixed 330px clipped "£205,000–£209,999" mid-figure on
+    // the Permanent Secretary, which is the one row everybody looks at first.
+    const metaOf = (n: OrgNode) => [
+      n.grade,
+      n.holder ?? '',
+      n.disclosed && n.floor != null ? `${gbp(n.floor)}–${gbp(n.ceil ?? n.floor)}` : 'pay withheld',
+    ].filter(Boolean).join(' · ');
+    const longestMeta = rowsOut.reduce((a, r2) => Math.max(a, metaOf(r2.n).length), 0);
+    const META_W = Math.ceil(longestMeta * 6.4) + 24;   // JetBrains Mono at 0.75rem
+    const titleRight = 34 + maxDepth * TREE_INDENT + 300;
+    const W = titleRight + META_W;
+    const H = Math.max(TREE_ROW, y) + 12;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('width', String(W));
+    svg.setAttribute('height', String(H));
+    svg.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+    svg.setAttribute('role', 'tree');
+    svg.setAttribute('aria-label', `${orgName} senior reporting hierarchy at ${dateLabel(date)}`);
+    const mkEl = (t: string, attrs: Record<string, string>, parent: Element) => {
+      const e = document.createElementNS('http://www.w3.org/2000/svg', t);
+      for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+      parent.append(e);
+      return e;
+    };
+
+    const xOf = (n: OrgNode) => 8 + (n.depth - 1) * TREE_INDENT;
+    const byPur = new Map(rowsOut.map((r) => [r.n.pur, r]));
+
+    // elbows first, so nodes sit on top of their lines
+    for (const { n, y: yy } of rowsOut) {
+      if (!open.has(n.pur) || !n.children.length) continue;
+      const kids = n.children.map((c) => byPur.get(c.pur)).filter(Boolean) as { n: OrgNode; y: number }[];
+      if (!kids.length) continue;
+      const x = xOf(n) + 5;
+      const lastY = kids[kids.length - 1].y;
+      mkEl('line', {
+        x1: String(x), y1: String(yy + 14), x2: String(x), y2: String(lastY + 11),
+        stroke: 'rgba(26,16,8,0.20)', 'stroke-width': '1',
+      }, svg);
+      for (const k of kids) {
+        mkEl('line', {
+          x1: String(x), y1: String(k.y + 11), x2: String(xOf(k.n) + 2), y2: String(k.y + 11),
+          stroke: 'rgba(26,16,8,0.20)', 'stroke-width': '1',
+        }, svg);
+      }
+    }
+
+    const gradeCount = Math.max(1, ds.meta.grades.length);
+    for (const { n, y: yy } of rowsOut) {
+      const x = xOf(n);
+      const g = mkEl('g', {
+        role: 'treeitem',
+        'aria-level': String(n.depth),
+        'aria-expanded': n.children.length ? String(open.has(n.pur)) : '',
+        tabindex: n.children.length ? '0' : '-1',
+        class: 'orgtree-node' + (matched.has(n.pur) ? ' is-match' : ''),
+      }, svg);
+
+      // the marker: filled when the post has a published band, hollow when not
+      mkEl('rect', {
+        x: String(x), y: String(yy + 6), width: '10', height: '10',
+        fill: n.disclosed ? ordinalColor(Math.max(0, n.gradeIdx), gradeCount) : 'transparent',
+        stroke: ordinalColor(Math.max(0, n.gradeIdx), gradeCount),
+        'stroke-width': '1.5',
+      }, g);
+
+      if (n.children.length) {
+        const t = mkEl('text', {
+          x: String(x + 14), y: String(yy + 15),
+          style: 'font-family: var(--font-mono); font-size: var(--fs-label-xs); fill: var(--accent); cursor: pointer',
+        }, g);
+        t.textContent = open.has(n.pur) ? '–' : '+';
+      }
+
+      const label = mkEl('text', {
+        x: String(x + 26), y: String(yy + 15),
+        style: `font-family: var(--font-body); font-size: var(--fs-label); fill: ${matched.has(n.pur) ? 'var(--accent-hover)' : 'var(--text-primary)'}`,
+      }, g);
+      // Truncate to the space actually available at this depth, not to a fixed
+      // character count: a post five layers down has 130px less room than one
+      // at the top, and a constant limit overprints the metadata column.
+      const budgetPx = titleRight - (x + 26) - 10;
+      const maxChars = Math.max(10, Math.floor(budgetPx / 7));
+      const suffix = open.has(n.pur) || !n.children.length ? '' : `  (${num(n.size - 1)} below)`;
+      const room = Math.max(8, maxChars - suffix.length);
+      const shownTitle = n.title.length > room ? n.title.slice(0, room - 1) + '…' : n.title;
+      label.textContent = shownTitle + suffix;
+
+      const meta = mkEl('text', {
+        x: String(titleRight + 8), y: String(yy + 15),
+        style: 'font-family: var(--font-mono); font-size: var(--fs-label-xs); fill: var(--text-muted)',
+      }, g);
+      meta.textContent = metaOf(n);
+
+      const title = mkEl('title', {}, g);
+      title.textContent = `${n.title}\n${n.grade}${n.unit ? ` · ${n.unit}` : ''}`
+        + `\n${n.holder ? n.holder : 'no name published'}`
+        + `\n${n.disclosed && n.floor != null ? `${gbp(n.floor)}–${gbp(n.ceil ?? n.floor)}` : 'pay withheld'}`
+        + (n.children.length ? `\n${num(n.children.length)} direct senior report${n.children.length === 1 ? '' : 's'}, ${num(n.size - 1)} in the subtree` : '\nno senior reports');
+
+      if (n.children.length) {
+        const toggle = () => { open.has(n.pur) ? open.delete(n.pur) : open.add(n.pur); draw(); };
+        g.addEventListener('click', toggle);
+        g.addEventListener('keydown', (e) => {
+          const ev = e as KeyboardEvent;
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(); }
+        });
+      }
+    }
+
+    clear(host).append(svg);
+
+    // The gutter was sized from an estimated character width, which is close
+    // but not exact — six labels still ran past the edge and were clipped.
+    // Now that the tree is in the document its text can be measured, so the
+    // viewBox is widened to whatever it actually needs. Measuring is cheap and
+    // it cannot be wrong, which an estimate always eventually is.
+    const fit = () => {
+      if (!svg.isConnected) return;
+      let rightMost = W;
+      for (const t of Array.from(svg.querySelectorAll('text'))) {
+        try {
+          const bb = (t as SVGGraphicsElement).getBBox();
+          rightMost = Math.max(rightMost, bb.x + bb.width);
+        } catch { /* not rendered: leave the estimate */ }
+      }
+      const w2 = Math.max(W, Math.ceil(rightMost) + 10);
+      svg.setAttribute('viewBox', `0 0 ${w2} ${H}`);
+      svg.setAttribute('width', String(w2));
+    };
+    // Measured on the next frame AND again once the webfonts have landed:
+    // getBBox on a text node whose font has not loaded returns a near-zero
+    // width, so measuring synchronously silently agrees with whatever estimate
+    // it was meant to correct.
+    requestAnimationFrame(fit);
+    const fonts = (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts;
+    if (fonts?.ready) fonts.ready.then(fit).catch(() => {});
+
+    if (q && !matched.size) {
+      host.append(h('div', { class: 'rank-note' }, [`Nothing in this filing matches “${filter.value.trim()}”.`]));
+    }
+  };
+
+  filter.addEventListener('input', draw);
+  expandAll.addEventListener('click', () => {
+    const all = (n: OrgNode) => { if (n.children.length) open.add(n.pur); n.children.forEach(all); };
+    roots.forEach(all); draw();
+  });
+  collapseAll.addEventListener('click', () => { open.clear(); for (const r of roots) if (r.children.length) open.add(r.pur); draw(); });
+  draw();
+
+  return card({
+    variant: 'figure', figNo: '5.11',
+    title: `${orgName} — the reporting tree at ${dateLabel(date)}`,
+    sub: (orphans > 0
+      ? `${num(nodes)} of ${num(nodes + orphans)} senior posts placed in the hierarchy`
+      : `${num(nodes)} senior posts, as filed`)
+      + ' · click a post to open or close it · source [1]',
+    caption: 'The hierarchy as the department drew it. A filled marker is a post with a published pay band; a hollow '
+      + 'one is a post whose pay was withheld, which is most of them. Colour is grade, on the ordinal ramp. Nothing '
+      + 'here is scaled by pay: two thirds of these posts have no published figure, and sizing marks by a quantity '
+      + 'most of them lack would draw a picture of who discloses rather than of who earns.',
+    table: fsTable(
+      [{ label: 'Post' }, { label: 'Grade' }, { label: 'Layer', num: true }, { label: 'Direct reports', num: true },
+        { label: 'Post-holder' }, { label: 'Published band', num: true }],
+      (() => {
+        const out: { cells: string[] }[] = [];
+        const walk = (n: OrgNode) => {
+          out.push({
+            cells: [
+              `${'— '.repeat(Math.max(0, n.depth - 1))}${n.title}`,
+              n.grade, String(n.depth), num(n.children.length),
+              n.holder ?? '—',
+              n.disclosed && n.floor != null ? `${gbp(n.floor)}–${gbp(n.ceil ?? n.floor)}` : 'withheld',
+            ],
+          });
+          n.children.forEach(walk);
+        };
+        roots.forEach(walk);
+        return out;
+      })(),
+      { maxHeight: '520px' },
+    ),
+    build: (h2) => { h2.append(controls, host); return null; },
+    foot: [
+      orphans > 0
+        ? `${num(orphans)} post${orphans === 1 ? '' : 's'} could not be placed — no usable reference, a duplicated one, `
+          + 'or a reporting line pointing outside this filing. They are shown at the top level rather than dropped.'
+        : 'Every post in this filing resolved to a place in the hierarchy.',
+      'The tree stops at the senior boundary. Almost every post here also manages staff below the SCS, and none of '
+      + 'that is in the organogram, so a post with no children is not a post with no team.',
+    ],
+  });
 }

@@ -597,3 +597,125 @@ export function structureSeriesDetailed(rows: PostRow[], dates: string[]): {
   }
   return { kept, rejected };
 }
+
+// ---------------------------------------------------------------------------
+// The tree itself
+// ---------------------------------------------------------------------------
+
+export interface OrgNode {
+  pur: string;
+  title: string;
+  grade: string;
+  gradeIdx: number;
+  unit: string | null;
+  suborg: string | null;
+  holder: string | null;
+  status: PostRow['status'];
+  disclosed: boolean;
+  floor: number | null;
+  ceil: number | null;
+  depth: number;
+  children: OrgNode[];
+  /** posts in this subtree, including this one */
+  size: number;
+  /** deepest chain below this post, counted in posts */
+  height: number;
+  /** total published pay floor across the subtree, for a sense of weight */
+  subtreeFloor: number;
+}
+
+/**
+ * The reporting hierarchy for one organisation at one reference date.
+ *
+ * Ordering is deliberate and stable: children are sorted by grade (most senior
+ * first), then by subtree size, then by title. A tree that reorders between
+ * renders is unreadable, and sorting by size alone buries a Director General
+ * with one report beneath a Deputy Director with eight.
+ */
+export function orgTree(rows: PostRow[], date: string): { roots: OrgNode[]; nodes: number; orphans: number } {
+  const all = rows.filter((r) => r.date === date);
+  const live = all.filter((r) => r.status !== 'eliminated');
+  const byPur = new Map<string, PostRow>();
+  for (const r of all) if (r.pur) byPur.set(r.pur, r);
+
+  const mk = (r: PostRow, gradeOrder: string[]): OrgNode => ({
+    pur: r.pur ?? '',
+    title: r.title,
+    grade: r.grade,
+    gradeIdx: gradeOrder.indexOf(r.grade),
+    unit: r.unit,
+    suborg: r.suborg,
+    holder: r.holder,
+    status: r.status,
+    disclosed: r.disclosed,
+    floor: r.floor,
+    ceil: r.ceil,
+    depth: 1,
+    children: [],
+    size: 1,
+    height: 1,
+    subtreeFloor: r.disclosed && r.floor != null ? r.floor : 0,
+  });
+
+  const gradeOrder = [...new Set(live.map((r) => r.grade))];
+  const nodes = new Map<string, OrgNode>();
+  // A duplicated reference is a data fault, not two posts: the first wins and
+  // the rest become orphans rather than silently overwriting a subtree.
+  let orphans = 0;
+  for (const r of live) {
+    if (!r.pur) { orphans++; continue; }
+    if (nodes.has(r.pur)) { orphans++; continue; }
+    nodes.set(r.pur, mk(r, gradeOrder));
+  }
+
+  const roots: OrgNode[] = [];
+  for (const r of live) {
+    const n = r.pur ? nodes.get(r.pur) : null;
+    if (!n) continue;
+    const parentPur = r.reportsTo && r.reportsTo !== r.pur ? r.reportsTo : null;
+    const parent = parentPur ? nodes.get(parentPur) : null;
+    if (parent) parent.children.push(n);
+    else if (parentPur && byPur.has(parentPur)) roots.push(n);   // parent exists but is eliminated
+    else if (parentPur) { orphans++; roots.push(n); }            // points outside the filing
+    else roots.push(n);
+  }
+
+  // depth, size and height in one post-order walk, iteratively: a department
+  // that files a cycle would blow a recursive stack, and some have.
+  const seen = new Set<OrgNode>();
+  const setDepth = (n: OrgNode, d: number) => {
+    const stack: [OrgNode, number][] = [[n, d]];
+    while (stack.length) {
+      const [cur, cd] = stack.pop()!;
+      if (seen.has(cur)) continue;
+      seen.add(cur);
+      cur.depth = cd;
+      for (const c of cur.children) stack.push([c, cd + 1]);
+    }
+  };
+  for (const r of roots) setDepth(r, 1);
+
+  const order: OrgNode[] = [];
+  const visit = new Set<OrgNode>();
+  const stack = [...roots];
+  while (stack.length) {
+    const n = stack.pop()!;
+    if (visit.has(n)) continue;
+    visit.add(n);
+    order.push(n);
+    for (const c of n.children) stack.push(c);
+  }
+  for (let i = order.length - 1; i >= 0; i--) {
+    const n = order[i];
+    n.size = 1;
+    n.height = 1;
+    for (const c of n.children) {
+      n.size += c.size;
+      n.height = Math.max(n.height, c.height + 1);
+      n.subtreeFloor += c.subtreeFloor;
+    }
+    n.children.sort((a, b) => a.gradeIdx - b.gradeIdx || b.size - a.size || a.title.localeCompare(b.title));
+  }
+  roots.sort((a, b) => b.size - a.size || a.gradeIdx - b.gradeIdx);
+  return { roots, nodes: order.length, orphans };
+}
