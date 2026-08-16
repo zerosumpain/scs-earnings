@@ -1,0 +1,1755 @@
+{
+ "schema": 1,
+ "kind": "scs-earnings-datadiff-baseline",
+ "promoted": "2026-08-16T09:06:20.882Z",
+ "generated": "2026-08-16T08:43:55.869Z",
+ "metaSchema": 2,
+ "scope": {
+  "tier": "ALL",
+  "only": null,
+  "maxFiles": null,
+  "partial": false
+ },
+ "stats": {
+  "orgs": 78,
+  "snapshots": 1483,
+  "files": 1500,
+  "dates": 251,
+  "dateRange": [
+   "2010-06-30",
+   "2026-08-10"
+  ],
+  "posts": 185926,
+  "headcount": 179915,
+  "seniorPosts": 168284,
+  "disclosed": 62846,
+  "openBand": 273,
+  "withheld": 117069,
+  "disclosureRate": 0.349,
+  "eliminated": 6011,
+  "vacant": 5477,
+  "coreCells": 18350,
+  "profCells": 42240,
+  "filesOk": 1500,
+  "filesFail": 28,
+  "undatedSkipped": 2,
+  "rejectedSiblings": 27
+ },
+ "dicts": {
+  "orgs": [
+   "CO",
+   "HMT",
+   "HMRC",
+   "DFE",
+   "DHSC",
+   "DWP",
+   "MOD",
+   "MOJ",
+   "HO",
+   "FCDO",
+   "FCO",
+   "DFID",
+   "DFT",
+   "DEFRA",
+   "DBT",
+   "DIT",
+   "BEIS",
+   "BIS",
+   "DECC",
+   "DESNZ",
+   "DSIT",
+   "DCMS",
+   "DCLG",
+   "AGO",
+   "WO",
+   "SO",
+   "NHSBT",
+   "UKSA",
+   "EA",
+   "HS2",
+   "ORR",
+   "HCA",
+   "DVSA",
+   "IFATE",
+   "IPO",
+   "UKAEA",
+   "VOA",
+   "TF",
+   "MCA",
+   "TH",
+   "CPS",
+   "LR",
+   "CCRC",
+   "BTPA",
+   "NLB",
+   "DVLA",
+   "VCA",
+   "RSH",
+   "ATE",
+   "ACAS",
+   "PINS",
+   "CH",
+   "BL",
+   "NHSE",
+   "HEE",
+   "GLD",
+   "MRC",
+   "MODCTLB",
+   "UKHSA",
+   "UKRI",
+   "SFA",
+   "CQC",
+   "OFSTED",
+   "NE",
+   "NOMS",
+   "IPCC",
+   "SMG",
+   "NAM",
+   "RAFM",
+   "NMRN",
+   "NERC",
+   "HMIC",
+   "CMA",
+   "AC",
+   "STA",
+   "FC",
+   "MONITOR",
+   "SLC"
+  ],
+  "grades": [
+   "SCS4 / Perm Sec",
+   "SCS3 (Dir Gen)",
+   "SCS2 (Dir)",
+   "SCS1 (Dep Dir)",
+   "SCS (band n/s)",
+   "Military (OF-6+)",
+   "Specialist (own scale)",
+   "Below SCS",
+   "Other / Not stated"
+  ],
+  "profs": [
+   "Communications",
+   "Commercial",
+   "Counter Fraud",
+   "Digital, Data & Technology",
+   "Economics",
+   "Finance",
+   "Geography",
+   "Human Resources",
+   "Inspector of Education and Training",
+   "Intelligence & Security",
+   "Internal Audit & Risk",
+   "Knowledge & Information Management",
+   "Legal",
+   "Medical & Health",
+   "Military",
+   "Occupational Psychology",
+   "Operational Delivery",
+   "Operational Research",
+   "Planning",
+   "Planning Inspectors",
+   "Policy",
+   "Project Delivery",
+   "Property & Estates",
+   "Science & Engineering",
+   "Social Research",
+   "Statistics",
+   "Tax",
+   "Veterinary",
+   "Other",
+   "Not stated"
+  ],
+  "statuses": [
+   "filled-named",
+   "filled-undisclosed",
+   "vacant",
+   "eliminated",
+   "redacted",
+   "blank"
+  ],
+  "withheldReasons": [
+   "blank",
+   "zero",
+   "N/A",
+   "implausible",
+   "other"
+  ],
+  "dates": [
+   "2010-06-30",
+   "2010-09-30",
+   "2010-12-31",
+   "2011-03-31",
+   "2011-09-30",
+   "2012-03-31",
+   "2012-09-30",
+   "2013-03-31",
+   "2013-06-30",
+   "2013-09-30",
+   "2014-03-31",
+   "2014-09-30",
+   "2014-12-31",
+   "2015-03-31",
+   "2015-09-30",
+   "2016-03-31",
+   "2016-09-30",
+   "2017-03-31",
+   "2017-09-30",
+   "2018-03-31",
+   "2018-09-30",
+   "2019-03-31",
+   "2019-06-05",
+   "2019-06-06",
+   "2019-06-12",
+   "2019-06-25",
+   "2019-06-30",
+   "2019-07-02",
+   "2019-09-30",
+   "2019-11-26",
+   "2019-12-06",
+   "2020-01-30",
+   "2020-02-24",
+   "2020-03-31",
+   "2020-06-08",
+   "2020-06-29",
+   "2020-06-30",
+   "2020-07-15",
+   "2020-09-30",
+   "2020-10-28",
+   "2020-10-31",
+   "2020-12-06",
+   "2021-01-27",
+   "2021-03-26",
+   "2021-03-31",
+   "2021-04-08",
+   "2021-06-01",
+   "2021-06-03",
+   "2021-06-04",
+   "2021-06-17",
+   "2021-06-30",
+   "2021-07-21",
+   "2021-07-22",
+   "2021-07-23",
+   "2021-07-26",
+   "2021-07-27",
+   "2021-08-13",
+   "2021-08-27",
+   "2021-09-06",
+   "2021-09-30",
+   "2021-10-21",
+   "2021-10-22",
+   "2021-10-26",
+   "2021-11-01",
+   "2021-11-02",
+   "2021-11-08",
+   "2021-11-09",
+   "2021-11-11",
+   "2021-11-12",
+   "2021-11-15",
+   "2021-11-18",
+   "2021-11-19",
+   "2021-11-22",
+   "2021-11-23",
+   "2021-11-30",
+   "2021-12-03",
+   "2021-12-30",
+   "2021-12-31",
+   "2022-01-28",
+   "2022-01-31",
+   "2022-02-01",
+   "2022-02-09",
+   "2022-02-11",
+   "2022-02-17",
+   "2022-03-01",
+   "2022-03-09",
+   "2022-03-31",
+   "2022-04-04",
+   "2022-04-28",
+   "2022-04-29",
+   "2022-05-04",
+   "2022-05-06",
+   "2022-05-09",
+   "2022-05-11",
+   "2022-05-13",
+   "2022-06-01",
+   "2022-06-09",
+   "2022-06-30",
+   "2022-07-06",
+   "2022-07-20",
+   "2022-07-26",
+   "2022-07-28",
+   "2022-07-29",
+   "2022-07-30",
+   "2022-07-31",
+   "2022-08-01",
+   "2022-08-05",
+   "2022-08-08",
+   "2022-08-11",
+   "2022-08-12",
+   "2022-08-18",
+   "2022-08-19",
+   "2022-08-25",
+   "2022-08-31",
+   "2022-09-06",
+   "2022-09-23",
+   "2022-09-30",
+   "2022-10-27",
+   "2022-10-29",
+   "2022-10-30",
+   "2022-10-31",
+   "2022-11-04",
+   "2022-11-07",
+   "2022-11-08",
+   "2022-11-18",
+   "2022-11-25",
+   "2022-11-28",
+   "2022-11-30",
+   "2022-12-15",
+   "2022-12-19",
+   "2022-12-31",
+   "2023-01-19",
+   "2023-01-30",
+   "2023-01-31",
+   "2023-02-14",
+   "2023-02-16",
+   "2023-02-17",
+   "2023-02-20",
+   "2023-03-28",
+   "2023-03-29",
+   "2023-03-31",
+   "2023-04-21",
+   "2023-04-28",
+   "2023-04-30",
+   "2023-05-03",
+   "2023-05-09",
+   "2023-05-25",
+   "2023-06-20",
+   "2023-06-30",
+   "2023-07-06",
+   "2023-07-28",
+   "2023-07-31",
+   "2023-08-01",
+   "2023-08-07",
+   "2023-08-18",
+   "2023-08-23",
+   "2023-09-30",
+   "2023-10-17",
+   "2023-10-24",
+   "2023-10-27",
+   "2023-10-31",
+   "2023-11-01",
+   "2023-11-06",
+   "2023-11-28",
+   "2023-12-13",
+   "2023-12-31",
+   "2024-01-24",
+   "2024-01-25",
+   "2024-01-31",
+   "2024-02-12",
+   "2024-02-13",
+   "2024-02-23",
+   "2024-03-20",
+   "2024-03-27",
+   "2024-03-31",
+   "2024-04-22",
+   "2024-04-24",
+   "2024-04-25",
+   "2024-04-30",
+   "2024-05-10",
+   "2024-06-30",
+   "2024-07-12",
+   "2024-07-30",
+   "2024-07-31",
+   "2024-08-30",
+   "2024-09-30",
+   "2024-10-08",
+   "2024-10-11",
+   "2024-10-17",
+   "2024-10-25",
+   "2024-10-30",
+   "2024-10-31",
+   "2024-11-01",
+   "2024-11-04",
+   "2024-11-11",
+   "2024-12-19",
+   "2024-12-31",
+   "2025-01-16",
+   "2025-01-31",
+   "2025-02-01",
+   "2025-02-06",
+   "2025-02-18",
+   "2025-03-31",
+   "2025-04-22",
+   "2025-04-30",
+   "2025-05-13",
+   "2025-05-29",
+   "2025-06-30",
+   "2025-07-11",
+   "2025-07-18",
+   "2025-07-24",
+   "2025-07-30",
+   "2025-07-31",
+   "2025-08-01",
+   "2025-08-06",
+   "2025-08-15",
+   "2025-09-30",
+   "2025-10-17",
+   "2025-10-27",
+   "2025-10-28",
+   "2025-10-30",
+   "2025-10-31",
+   "2025-11-05",
+   "2025-11-07",
+   "2025-11-18",
+   "2025-11-28",
+   "2025-12-01",
+   "2025-12-05",
+   "2025-12-08",
+   "2025-12-11",
+   "2025-12-31",
+   "2026-01-19",
+   "2026-01-30",
+   "2026-01-31",
+   "2026-02-02",
+   "2026-02-05",
+   "2026-02-17",
+   "2026-02-21",
+   "2026-03-31",
+   "2026-04-29",
+   "2026-04-30",
+   "2026-05-07",
+   "2026-06-04",
+   "2026-06-15",
+   "2026-06-22",
+   "2026-06-30",
+   "2026-07-22",
+   "2026-07-30",
+   "2026-07-31",
+   "2026-08-03",
+   "2026-08-10"
+  ]
+ },
+ "orgs": {
+  "CO": {
+   "snapshots": 23,
+   "posts": 8048,
+   "headcount": 7677,
+   "disclosed": 3222
+  },
+  "HMT": {
+   "snapshots": 23,
+   "posts": 2964,
+   "headcount": 2944,
+   "disclosed": 866
+  },
+  "HMRC": {
+   "snapshots": 40,
+   "posts": 20357,
+   "headcount": 19464,
+   "disclosed": 2752
+  },
+  "DFE": {
+   "snapshots": 42,
+   "posts": 9542,
+   "headcount": 9364,
+   "disclosed": 2121
+  },
+  "DHSC": {
+   "snapshots": 30,
+   "posts": 24974,
+   "headcount": 24705,
+   "disclosed": 3354
+  },
+  "DWP": {
+   "snapshots": 37,
+   "posts": 10196,
+   "headcount": 10182,
+   "disclosed": 8989
+  },
+  "MOD": {
+   "snapshots": 37,
+   "posts": 12932,
+   "headcount": 12793,
+   "disclosed": 3614
+  },
+  "MOJ": {
+   "snapshots": 33,
+   "posts": 8821,
+   "headcount": 8475,
+   "disclosed": 1998
+  },
+  "HO": {
+   "snapshots": 22,
+   "posts": 8231,
+   "headcount": 8060,
+   "disclosed": 1846
+  },
+  "FCDO": {
+   "snapshots": 14,
+   "posts": 2395,
+   "headcount": 2395,
+   "disclosed": 2393
+  },
+  "FCO": {
+   "snapshots": 14,
+   "posts": 1852,
+   "headcount": 1852,
+   "disclosed": 1779
+  },
+  "DFID": {
+   "snapshots": 14,
+   "posts": 1239,
+   "headcount": 1239,
+   "disclosed": 1221
+  },
+  "DFT": {
+   "snapshots": 37,
+   "posts": 7365,
+   "headcount": 7238,
+   "disclosed": 2657
+  },
+  "DEFRA": {
+   "snapshots": 26,
+   "posts": 4682,
+   "headcount": 4622,
+   "disclosed": 1131
+  },
+  "DBT": {
+   "snapshots": 13,
+   "posts": 3428,
+   "headcount": 3428,
+   "disclosed": 1180
+  },
+  "DIT": {
+   "snapshots": 12,
+   "posts": 1644,
+   "headcount": 1644,
+   "disclosed": 1530
+  },
+  "BEIS": {
+   "snapshots": 15,
+   "posts": 4424,
+   "headcount": 4424,
+   "disclosed": 1041
+  },
+  "BIS": {
+   "snapshots": 4,
+   "posts": 883,
+   "headcount": 785,
+   "disclosed": 174
+  },
+  "DECC": {
+   "snapshots": 6,
+   "posts": 675,
+   "headcount": 615,
+   "disclosed": 247
+  },
+  "DESNZ": {
+   "snapshots": 12,
+   "posts": 2664,
+   "headcount": 2664,
+   "disclosed": 608
+  },
+  "DSIT": {
+   "snapshots": 11,
+   "posts": 1588,
+   "headcount": 1588,
+   "disclosed": 415
+  },
+  "DCMS": {
+   "snapshots": 29,
+   "posts": 2586,
+   "headcount": 2586,
+   "disclosed": 1699
+  },
+  "DCLG": {
+   "snapshots": 33,
+   "posts": 6030,
+   "headcount": 5212,
+   "disclosed": 4410
+  },
+  "AGO": {
+   "snapshots": 15,
+   "posts": 80,
+   "headcount": 80,
+   "disclosed": 31
+  },
+  "WO": {
+   "snapshots": 5,
+   "posts": 20,
+   "headcount": 20,
+   "disclosed": 20
+  },
+  "SO": {
+   "snapshots": 4,
+   "posts": 16,
+   "headcount": 16,
+   "disclosed": 4
+  },
+  "NHSBT": {
+   "snapshots": 34,
+   "posts": 2428,
+   "headcount": 2410,
+   "disclosed": 2285
+  },
+  "UKSA": {
+   "snapshots": 22,
+   "posts": 1773,
+   "headcount": 1762,
+   "disclosed": 1591
+  },
+  "EA": {
+   "snapshots": 35,
+   "posts": 4522,
+   "headcount": 4169,
+   "disclosed": 990
+  },
+  "HS2": {
+   "snapshots": 30,
+   "posts": 10333,
+   "headcount": 9861,
+   "disclosed": 858
+  },
+  "ORR": {
+   "snapshots": 38,
+   "posts": 786,
+   "headcount": 770,
+   "disclosed": 313
+  },
+  "HCA": {
+   "snapshots": 12,
+   "posts": 286,
+   "headcount": 286,
+   "disclosed": 286
+  },
+  "DVSA": {
+   "snapshots": 33,
+   "posts": 286,
+   "headcount": 286,
+   "disclosed": 270
+  },
+  "IFATE": {
+   "snapshots": 13,
+   "posts": 216,
+   "headcount": 216,
+   "disclosed": 216
+  },
+  "IPO": {
+   "snapshots": 25,
+   "posts": 230,
+   "headcount": 230,
+   "disclosed": 211
+  },
+  "UKAEA": {
+   "snapshots": 22,
+   "posts": 311,
+   "headcount": 284,
+   "disclosed": 198
+  },
+  "VOA": {
+   "snapshots": 26,
+   "posts": 609,
+   "headcount": 589,
+   "disclosed": 197
+  },
+  "TF": {
+   "snapshots": 37,
+   "posts": 213,
+   "headcount": 191,
+   "disclosed": 175
+  },
+  "MCA": {
+   "snapshots": 34,
+   "posts": 243,
+   "headcount": 243,
+   "disclosed": 168
+  },
+  "TH": {
+   "snapshots": 36,
+   "posts": 166,
+   "headcount": 166,
+   "disclosed": 165
+  },
+  "CPS": {
+   "snapshots": 20,
+   "posts": 1828,
+   "headcount": 1729,
+   "disclosed": 155
+  },
+  "LR": {
+   "snapshots": 23,
+   "posts": 678,
+   "headcount": 638,
+   "disclosed": 130
+  },
+  "CCRC": {
+   "snapshots": 24,
+   "posts": 142,
+   "headcount": 142,
+   "disclosed": 120
+  },
+  "BTPA": {
+   "snapshots": 36,
+   "posts": 375,
+   "headcount": 352,
+   "disclosed": 113
+  },
+  "NLB": {
+   "snapshots": 37,
+   "posts": 121,
+   "headcount": 121,
+   "disclosed": 90
+  },
+  "DVLA": {
+   "snapshots": 40,
+   "posts": 320,
+   "headcount": 307,
+   "disclosed": 39
+  },
+  "VCA": {
+   "snapshots": 37,
+   "posts": 41,
+   "headcount": 41,
+   "disclosed": 34
+  },
+  "RSH": {
+   "snapshots": 21,
+   "posts": 179,
+   "headcount": 179,
+   "disclosed": 32
+  },
+  "ATE": {
+   "snapshots": 15,
+   "posts": 73,
+   "headcount": 73,
+   "disclosed": 30
+  },
+  "ACAS": {
+   "snapshots": 12,
+   "posts": 109,
+   "headcount": 109,
+   "disclosed": 24
+  },
+  "PINS": {
+   "snapshots": 4,
+   "posts": 27,
+   "headcount": 27,
+   "disclosed": 10
+  },
+  "CH": {
+   "snapshots": 4,
+   "posts": 34,
+   "headcount": 34,
+   "disclosed": 4
+  },
+  "BL": {
+   "snapshots": 22,
+   "posts": 1435,
+   "headcount": 757,
+   "disclosed": 751
+  },
+  "NHSE": {
+   "snapshots": 3,
+   "posts": 847,
+   "headcount": 847,
+   "disclosed": 737
+  },
+  "HEE": {
+   "snapshots": 4,
+   "posts": 2653,
+   "headcount": 2653,
+   "disclosed": 724
+  },
+  "GLD": {
+   "snapshots": 12,
+   "posts": 1836,
+   "headcount": 1749,
+   "disclosed": 297
+  },
+  "MRC": {
+   "snapshots": 11,
+   "posts": 343,
+   "headcount": 343,
+   "disclosed": 217
+  },
+  "MODCTLB": {
+   "snapshots": 1,
+   "posts": 218,
+   "headcount": 218,
+   "disclosed": 213
+  },
+  "UKHSA": {
+   "snapshots": 1,
+   "posts": 214,
+   "headcount": 214,
+   "disclosed": 195
+  },
+  "UKRI": {
+   "snapshots": 2,
+   "posts": 189,
+   "headcount": 189,
+   "disclosed": 185
+  },
+  "SFA": {
+   "snapshots": 4,
+   "posts": 269,
+   "headcount": 196,
+   "disclosed": 183
+  },
+  "CQC": {
+   "snapshots": 10,
+   "posts": 659,
+   "headcount": 648,
+   "disclosed": 165
+  },
+  "OFSTED": {
+   "snapshots": 7,
+   "posts": 231,
+   "headcount": 229,
+   "disclosed": 149
+  },
+  "NE": {
+   "snapshots": 14,
+   "posts": 421,
+   "headcount": 284,
+   "disclosed": 135
+  },
+  "NOMS": {
+   "snapshots": 6,
+   "posts": 627,
+   "headcount": 456,
+   "disclosed": 94
+  },
+  "IPCC": {
+   "snapshots": 13,
+   "posts": 89,
+   "headcount": 89,
+   "disclosed": 89
+  },
+  "SMG": {
+   "snapshots": 5,
+   "posts": 93,
+   "headcount": 61,
+   "disclosed": 60
+  },
+  "NAM": {
+   "snapshots": 33,
+   "posts": 97,
+   "headcount": 97,
+   "disclosed": 18
+  },
+  "RAFM": {
+   "snapshots": 33,
+   "posts": 127,
+   "headcount": 127,
+   "disclosed": 6
+  },
+  "NMRN": {
+   "snapshots": 32,
+   "posts": 130,
+   "headcount": 121,
+   "disclosed": 58
+  },
+  "NERC": {
+   "snapshots": 4,
+   "posts": 88,
+   "headcount": 80,
+   "disclosed": 80
+  },
+  "HMIC": {
+   "snapshots": 14,
+   "posts": 282,
+   "headcount": 195,
+   "disclosed": 78
+  },
+  "CMA": {
+   "snapshots": 3,
+   "posts": 401,
+   "headcount": 401,
+   "disclosed": 76
+  },
+  "AC": {
+   "snapshots": 4,
+   "posts": 91,
+   "headcount": 87,
+   "disclosed": 78
+  },
+  "STA": {
+   "snapshots": 2,
+   "posts": 318,
+   "headcount": 318,
+   "disclosed": 64
+  },
+  "FC": {
+   "snapshots": 7,
+   "posts": 71,
+   "headcount": 66,
+   "disclosed": 64
+  },
+  "MONITOR": {
+   "snapshots": 6,
+   "posts": 150,
+   "headcount": 141,
+   "disclosed": 63
+  },
+  "SLC": {
+   "snapshots": 9,
+   "posts": 82,
+   "headcount": 62,
+   "disclosed": 61
+  }
+ },
+ "medians": {
+  "2010-06-30": {
+   "n": 37,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2010-09-30": {
+   "n": 27,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2010-12-31": {
+   "n": 29,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2011-03-31": {
+   "n": 617,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2011-09-30": {
+   "n": 1091,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2012-03-31": {
+   "n": 730,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2012-09-30": {
+   "n": 630,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2013-03-31": {
+   "n": 853,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2013-06-30": {
+   "n": 33,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2013-09-30": {
+   "n": 1097,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2014-03-31": {
+   "n": 927,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2014-09-30": {
+   "n": 955,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2014-12-31": {
+   "n": 38,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2015-03-31": {
+   "n": 879,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2015-09-30": {
+   "n": 725,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2016-03-31": {
+   "n": 1079,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2016-09-30": {
+   "n": 496,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2017-03-31": {
+   "n": 882,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2017-09-30": {
+   "n": 778,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2018-03-31": {
+   "n": 811,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2018-09-30": {
+   "n": 597,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2019-03-31": {
+   "n": 845,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2019-06-06": {
+   "n": 78,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2019-06-25": {
+   "n": 52,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2019-06-30": {
+   "n": 178,
+   "floor": 75000,
+   "ceil": 79999
+  },
+  "2019-07-02": {
+   "n": 56,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2019-09-30": {
+   "n": 127,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2019-11-26": {
+   "n": 211,
+   "floor": 75000,
+   "ceil": 79999
+  },
+  "2019-12-06": {
+   "n": 57,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2020-01-30": {
+   "n": 37,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2020-02-24": {
+   "n": 98,
+   "floor": 75000,
+   "ceil": 79999
+  },
+  "2020-03-31": {
+   "n": 222,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2020-06-08": {
+   "n": 37,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2020-09-30": {
+   "n": 300,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2020-10-28": {
+   "n": 23,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2020-10-31": {
+   "n": 465,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2021-03-31": {
+   "n": 519,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2021-06-30": {
+   "n": 754,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2021-07-21": {
+   "n": 65,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2021-07-22": {
+   "n": 89,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2021-07-23": {
+   "n": 35,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2021-07-27": {
+   "n": 166,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2021-08-27": {
+   "n": 73,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2021-09-06": {
+   "n": 481,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2021-09-30": {
+   "n": 1367,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2021-10-21": {
+   "n": 63,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2021-10-22": {
+   "n": 368,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2021-10-26": {
+   "n": 50,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2021-11-09": {
+   "n": 57,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2021-11-15": {
+   "n": 50,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2021-11-18": {
+   "n": 60,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2021-11-30": {
+   "n": 35,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2021-12-31": {
+   "n": 1062,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2022-01-28": {
+   "n": 300,
+   "floor": 75000,
+   "ceil": 79999
+  },
+  "2022-01-31": {
+   "n": 125,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2022-02-09": {
+   "n": 49,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2022-02-17": {
+   "n": 60,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2022-03-31": {
+   "n": 985,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2022-04-04": {
+   "n": 35,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2022-04-28": {
+   "n": 77,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2022-04-29": {
+   "n": 530,
+   "floor": 75000,
+   "ceil": 79999
+  },
+  "2022-05-04": {
+   "n": 62,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2022-05-09": {
+   "n": 77,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2022-06-09": {
+   "n": 43,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2022-06-30": {
+   "n": 568,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2022-07-06": {
+   "n": 57,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2022-07-29": {
+   "n": 232,
+   "floor": 75000,
+   "ceil": 79999
+  },
+  "2022-07-30": {
+   "n": 77,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2022-08-01": {
+   "n": 76,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2022-08-05": {
+   "n": 38,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2022-08-12": {
+   "n": 62,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2022-08-18": {
+   "n": 60,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2022-08-19": {
+   "n": 143,
+   "floor": 75000,
+   "ceil": 79999
+  },
+  "2022-08-25": {
+   "n": 63,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2022-08-31": {
+   "n": 403,
+   "floor": 100000,
+   "ceil": 134999
+  },
+  "2022-09-06": {
+   "n": 34,
+   "floor": 95000,
+   "ceil": 104999
+  },
+  "2022-09-23": {
+   "n": 74,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2022-09-30": {
+   "n": 496,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2022-10-31": {
+   "n": 754,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2022-11-04": {
+   "n": 16,
+   "floor": 125000,
+   "ceil": 129999
+  },
+  "2022-11-18": {
+   "n": 67,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2022-11-30": {
+   "n": 259,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2022-12-31": {
+   "n": 579,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2023-01-19": {
+   "n": 259,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2023-01-31": {
+   "n": 775,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2023-02-17": {
+   "n": 39,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2023-02-20": {
+   "n": 71,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2023-03-31": {
+   "n": 529,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2023-04-28": {
+   "n": 545,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2023-04-30": {
+   "n": 126,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2023-06-20": {
+   "n": 68,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2023-06-30": {
+   "n": 642,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2023-07-31": {
+   "n": 372,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2023-08-07": {
+   "n": 83,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2023-08-18": {
+   "n": 72,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2023-08-23": {
+   "n": 40,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2023-09-30": {
+   "n": 998,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2023-10-17": {
+   "n": 60,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2023-10-27": {
+   "n": 321,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2023-10-31": {
+   "n": 232,
+   "floor": 80000,
+   "ceil": 84999
+  },
+  "2023-11-06": {
+   "n": 23,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2023-11-28": {
+   "n": 69,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2023-12-31": {
+   "n": 803,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2024-01-31": {
+   "n": 377,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2024-02-12": {
+   "n": 44,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2024-02-13": {
+   "n": 41,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2024-02-23": {
+   "n": 71,
+   "floor": 115000,
+   "ceil": 119999
+  },
+  "2024-03-31": {
+   "n": 774,
+   "floor": 100000,
+   "ceil": 104999
+  },
+  "2024-04-24": {
+   "n": 324,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2024-04-25": {
+   "n": 42,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2024-04-30": {
+   "n": 50,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2024-05-10": {
+   "n": 38,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2024-06-30": {
+   "n": 882,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2024-07-30": {
+   "n": 82,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2024-07-31": {
+   "n": 373,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2024-08-30": {
+   "n": 173,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2024-09-30": {
+   "n": 729,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2024-10-08": {
+   "n": 73,
+   "floor": 115000,
+   "ceil": 119999
+  },
+  "2024-10-11": {
+   "n": 76,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2024-10-25": {
+   "n": 318,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2024-10-31": {
+   "n": 53,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2024-11-01": {
+   "n": 87,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2024-12-19": {
+   "n": 45,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2024-12-31": {
+   "n": 954,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2025-01-31": {
+   "n": 54,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2025-02-01": {
+   "n": 313,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2025-02-06": {
+   "n": 176,
+   "floor": 95000,
+   "ceil": 99999
+  },
+  "2025-03-31": {
+   "n": 1209,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2025-04-30": {
+   "n": 376,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2025-05-13": {
+   "n": 42,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2025-05-29": {
+   "n": 172,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2025-06-30": {
+   "n": 890,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2025-07-11": {
+   "n": 173,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2025-07-24": {
+   "n": 51,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2025-07-31": {
+   "n": 230,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2025-08-01": {
+   "n": 329,
+   "floor": 85000,
+   "ceil": 89999
+  },
+  "2025-08-15": {
+   "n": 43,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2025-09-30": {
+   "n": 743,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2025-10-30": {
+   "n": 44,
+   "floor": 120000,
+   "ceil": 124999
+  },
+  "2025-10-31": {
+   "n": 131,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2025-11-05": {
+   "n": 322,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2025-11-28": {
+   "n": 39,
+   "floor": 115000,
+   "ceil": 119999
+  },
+  "2025-12-01": {
+   "n": 53,
+   "floor": 110000,
+   "ceil": 119999
+  },
+  "2025-12-05": {
+   "n": 76,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2025-12-08": {
+   "n": 175,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2025-12-11": {
+   "n": 172,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2025-12-31": {
+   "n": 475,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2026-01-30": {
+   "n": 49,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2026-02-02": {
+   "n": 100,
+   "floor": 110000,
+   "ceil": 164999
+  },
+  "2026-02-05": {
+   "n": 44,
+   "floor": 115000,
+   "ceil": 119999
+  },
+  "2026-02-17": {
+   "n": 165,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2026-02-21": {
+   "n": 327,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2026-03-31": {
+   "n": 715,
+   "floor": 110000,
+   "ceil": 114999
+  },
+  "2026-04-29": {
+   "n": 324,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2026-04-30": {
+   "n": 168,
+   "floor": 115000,
+   "ceil": 119999
+  },
+  "2026-06-15": {
+   "n": 110,
+   "floor": 130000,
+   "ceil": 134999
+  },
+  "2026-06-22": {
+   "n": 50,
+   "floor": 115000,
+   "ceil": 119999
+  },
+  "2026-06-30": {
+   "n": 468,
+   "floor": 100000,
+   "ceil": 164999
+  },
+  "2026-07-30": {
+   "n": 161,
+   "floor": 105000,
+   "ceil": 109999
+  },
+  "2026-07-31": {
+   "n": 64,
+   "floor": 115000,
+   "ceil": 119999
+  },
+  "2026-08-03": {
+   "n": 329,
+   "floor": 90000,
+   "ceil": 94999
+  },
+  "2026-08-10": {
+   "n": 104,
+   "floor": 110000,
+   "ceil": 114999
+  }
+ },
+ "bytes": {
+  "meta.json": 78339,
+  "cube-core.json": 424024,
+  "cube-core-b.json": 222795,
+  "cube-prof.json": 1214102,
+  "cube-prof-b.json": 515564
+ },
+ "cpih": {
+  "live": true,
+  "source": "ONS MM23/L522 (live)"
+ },
+ "warnings": [],
+ "failureUrls": [
+  "",
+  "",
+  "http://webarchive.nationalarchives.gov.uk/+/http://www.audit-commission.gov.uk/SiteCollectionDocuments/Senior%20staff%20pay%20dataset%2030%20June%202010%20(FINAL).csv",
+  "http://webarchive.nationalarchives.gov.uk/+/http://www.dft.gov.uk/datasets/btpa-senior-salary.csv",
+  "http://webarchive.nationalarchives.gov.uk/20140709064818/http://www.landregistry.gov.uk/__data/assets/file/0008/28988/Land-Registry-Organogram-30.09.2012-senior-data.csv",
+  "http://webarchive.nationalarchives.gov.uk/tna/20110504111428/http://www.dft.gov.uk/datasets/hs2-senior-salary.csv",
+  "https://ckan.eks.production.govuk.digital/dataset/5d21756f-35d2-48a7-b381-f27643659c1f/resource/63de0712-7a15-4407-aa89-6ab3f6a706a5/download/sept-2019-datagov1.xlsx",
+  "https://ckan.eks.production.govuk.digital/dataset/d10b9109-90c7-4de0-806b-199643b32ab1/resource/4b4348ad-7dbd-4333-9a13-e593e75184f9/download/british-library-staff-and-salary-data-march-2020-senior.csv",
+  "https://ckan.eks.production.govuk.digital/dataset/d10b9109-90c7-4de0-806b-199643b32ab1/resource/5071bc6d-d9da-4d3e-979e-1151b6ea1d59/download/british-library-staff-and-salary-data-september-2019-senior.csv",
+  "https://ckan.eks.production.govuk.digital/dataset/d10b9109-90c7-4de0-806b-199643b32ab1/resource/8c930b5f-8000-48f5-8447-64964d1eff5d/download/british-library-staff-and-salary-data-september-2020-senior.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/17d5c23d-f431-48e8-802a-b987431c8d92/resource/87f1fe68-4dab-4cca-a5d3-73061c5ba08b/download/2021-02-02t08-47-22z-2020-12-06-organogram-senior-1.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/45526f3f-5ddb-4cf8-881d-fc403333876b/resource/9e59b934-6368-4198-ab48-2f2974a9f39c/download/organogram-senior-csv-data-sept-20.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/45526f3f-5ddb-4cf8-881d-fc403333876b/resource/a88fe84d-47b0-4f60-8dd2-d5e0317dc41b/download/mhclg-senior-data.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/4f6f8a6b-31c7-4b2d-b8ef-77decce820ba/resource/60c7c77b-1e9f-427d-85d3-e919ed14e8e2/download/senior-staff-transparency-data-jan-21.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/736da925-f409-49b8-99c8-6ea7a57641d0/resource/e47f4ca6-dfb0-4033-9d63-7ab6898d1586/download/210630-senior-staff-ho-v2.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/a90a9f70-e28c-4a95-a7a7-f79d12fbe219/resource/233c84d8-eb93-45d0-b050-0fef481b48ac/download/senior-transparency-dataset-march-2021.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/a90a9f70-e28c-4a95-a7a7-f79d12fbe219/resource/55f67f03-a971-42af-aacc-c74964172952/download/senior-transparency-dataset-march-2021.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/a90a9f70-e28c-4a95-a7a7-f79d12fbe219/resource/91e42764-5205-4e8b-9271-f5e03f9df3df/download/senior-transparency-dataset-mar21.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/a90a9f70-e28c-4a95-a7a7-f79d12fbe219/resource/ed6c1826-6e45-4c38-a338-8e654ad64770/download/senior-transparency-dataset-sep-20.csv",
+  "https://ckan.publishing.service.gov.uk/dataset/bb3520e6-dd76-46d9-8bdd-86f0a2178be9/resource/863a2a92-9fa9-48af-a284-fb014199c334/download/uksa_transparency_mar21_v3.csv",
+  "https://pinso365.sharepoint.com/:x:/r/sites/DataandPerformance/Shared%20Documents/Statistical%20Releases/Organograms/organogram%20senior%20staff%202023.09.csv?d=w20a33e04a4a24cf9a48b26f591f3e5fa&csf=1&web=1&e=NxcTfS",
+  "https://pinso365.sharepoint.com/:x:/r/sites/DataandPerformance/_layouts/15/Doc.aspx?sourcedoc=%7B8B76AEC2-D017-48D1-AA08-A1DEAC352D0D%7D&file=Organogram%20Senior%20Staff.csv&action=default&mobileredirect=true",
+  "https://pinso365.sharepoint.com/:x:/r/sites/HR/Shared%20Documents/General/Monitoring%20Statistics/Organograms/240930_Q2%2024-25/240930_SeniorStaffSCSOrganogramQuarterly.xlsx?d=we0da6cd225af4776a3bc2e6e7c6db474&csf=1&web=1&e=kO4lkD",
+  "https://pinso365.sharepoint.com/:x:/s/HR/EVQwAYk9wglFoikqlueXBBEBEd3DQvM3Kubwt2kayMw-jg?e=zQMvtX",
+  "https://pinso365.sharepoint.com/:x:/s/HR/EWEd3yXP43hNpM7hH4jCBAAB67tC1fzZhhULsFbEwJbV_w?e=zwSL6Q",
+  "https://s3-eu-west-1.amazonaws.com/datagovuk-production-ckan-organogram/organogram-homes-and-communities-agency/resources/organogram-senior-csv-data-march-2019-2019-05-10T12-25-57Z.xlsx",
+  "https://s3-eu-west-1.amazonaws.com/datagovuk-production-ckan-organogram/organogram-homes-and-communities-agency/resources/organogram-senior-csv-data-september-2018-2019-05-10T10-27-19Z.xlsx",
+  "https://www.gov.uk/government/uploads/system/uploads/attachment_data/file/188115/dfe_20senior_20staff_20data_20april_202012.csv"
+ ]
+}
