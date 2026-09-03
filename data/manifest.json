@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "digest": "8ad5a25c7dc4a133ccd63316721e87ede9a70ff96f73ca38e27291a98778cc03",
+ "digest": "17cde9bb4efe12d22f1112be9eebbda91989026b553e1dd7093320b23fb2cd42",
  "scope": {
   "tier": "ALL",
   "only": null,
@@ -9,25 +9,25 @@
  },
  "stats": {
   "orgs": 78,
-  "snapshots": 1483,
-  "files": 1500,
-  "dates": 251,
+  "snapshots": 1486,
+  "files": 1503,
+  "dates": 253,
   "dateRange": [
    "2010-06-30",
-   "2026-08-10"
+   "2026-09-01"
   ],
-  "posts": 185926,
-  "headcount": 179915,
-  "seniorPosts": 168284,
-  "disclosed": 62846,
+  "posts": 186418,
+  "headcount": 180407,
+  "seniorPosts": 168776,
+  "disclosed": 63083,
   "openBand": 273,
-  "withheld": 117069,
-  "disclosureRate": 0.349,
+  "withheld": 117324,
+  "disclosureRate": 0.35,
   "eliminated": 6011,
   "vacant": 5477,
-  "coreCells": 18350,
-  "profCells": 42240,
-  "filesOk": 1500,
+  "coreCells": 18396,
+  "profCells": 42327,
+  "filesOk": 1503,
   "filesFail": 28,
   "undatedSkipped": 2,
   "rejectedSiblings": 27
@@ -283,7 +283,9 @@
   "2026-07-30",
   "2026-07-31",
   "2026-08-03",
-  "2026-08-10"
+  "2026-08-10",
+  "2026-08-27",
+  "2026-09-01"
  ],
  "resources": {
   "AC": [
@@ -2419,6 +2421,23 @@
     "basis": "url",
     "sha256": "f8022db669ebe45f6a4aed89d10668717bd902393fcec2318ae14e989d222912",
     "bytes": 2339,
+    "rows": 4,
+    "posts": 4,
+    "disclosed": 2,
+    "blankRows": 0,
+    "validApplied": true,
+    "juniorRows": 0
+   },
+   {
+    "pkg": "organogram-british-transport-police-authority",
+    "url": "https://s3-eu-west-1.amazonaws.com/datagovuk-production-ckan-organogram/organogram-british-transport-police-authority/resources/2026-08-27T12-50-30Z-2026-08-27-organogram-senior.csv",
+    "created": "2026-08-27T12:50:30.187475",
+    "lastModified": "",
+    "referenceDate": "2026-08-27",
+    "confidence": "declared",
+    "basis": "url",
+    "sha256": "184f09611b904170e21127b7e7c2a62209c0f2091892abd54d83bf2c881c7eb1",
+    "bytes": 2316,
     "rows": 4,
     "posts": 4,
     "disclosed": 2,
@@ -11279,6 +11298,23 @@
     "blankRows": 0,
     "validApplied": true,
     "juniorRows": 0
+   },
+   {
+    "pkg": "fcdo-organograms",
+    "url": "https://s3-eu-west-1.amazonaws.com/datagovuk-production-ckan-organogram/fcdo-organograms/resources/2026-09-01T13-57-14Z-2026-09-01-organogram-senior.csv",
+    "created": "2026-09-01T13:57:15.020208",
+    "lastModified": "",
+    "referenceDate": "2026-09-01",
+    "confidence": "declared",
+    "basis": "url",
+    "sha256": "e49764803c2502edef5eaa66167508b685bee8947344703ba8a204d2ed6366c3",
+    "bytes": 52613,
+    "rows": 156,
+    "posts": 156,
+    "disclosed": 156,
+    "blankRows": 0,
+    "validApplied": true,
+    "juniorRows": 0
    }
   ],
   "FCO": [
@@ -17464,6 +17500,23 @@
     "rows": 317,
     "posts": 317,
     "disclosed": 77,
+    "blankRows": 0,
+    "validApplied": true,
+    "juniorRows": 0
+   },
+   {
+    "pkg": "organogram-ministry-of-justice",
+    "url": "https://s3-eu-west-1.amazonaws.com/datagovuk-production-ckan-organogram/organogram-ministry-of-justice/resources/2026-08-25T13-23-19Z-2026-06-30-organogram-senior.csv",
+    "created": "2026-08-25T13:23:19.480045",
+    "lastModified": "",
+    "referenceDate": "2026-06-30",
+    "confidence": "declared",
+    "basis": "url",
+    "sha256": "d74bfd768b9a99cb2f04e7e9b0489c31d7c96f59ab4b3fc3ee3480a95f29de9e",
+    "bytes": 94536,
+    "rows": 332,
+    "posts": 332,
+    "disclosed": 79,
     "blankRows": 0,
     "validApplied": true,
     "juniorRows": 0
