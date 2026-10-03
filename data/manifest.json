@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "digest": "17cde9bb4efe12d22f1112be9eebbda91989026b553e1dd7093320b23fb2cd42",
+ "digest": "587e405ce9a9de1dfd6cbdb9e6a6735b5a822dac275acb1a9a6eed15fc2b1b38",
  "scope": {
   "tier": "ALL",
   "only": null,
@@ -9,28 +9,28 @@
  },
  "stats": {
   "orgs": 78,
-  "snapshots": 1486,
-  "files": 1503,
-  "dates": 253,
+  "snapshots": 1488,
+  "files": 1505,
+  "dates": 254,
   "dateRange": [
    "2010-06-30",
-   "2026-09-01"
+   "2026-09-04"
   ],
-  "posts": 186418,
-  "headcount": 180407,
-  "seniorPosts": 168776,
-  "disclosed": 63083,
+  "posts": 186905,
+  "headcount": 180894,
+  "seniorPosts": 169263,
+  "disclosed": 63195,
   "openBand": 273,
-  "withheld": 117324,
-  "disclosureRate": 0.35,
+  "withheld": 117699,
+  "disclosureRate": 0.349,
   "eliminated": 6011,
   "vacant": 5477,
-  "coreCells": 18396,
-  "profCells": 42327,
-  "filesOk": 1503,
+  "coreCells": 18446,
+  "profCells": 42436,
+  "filesOk": 1505,
   "filesFail": 28,
   "undatedSkipped": 2,
-  "rejectedSiblings": 27
+  "rejectedSiblings": 26
  },
  "dates": [
   "2010-06-30",
@@ -285,7 +285,8 @@
   "2026-08-03",
   "2026-08-10",
   "2026-08-27",
-  "2026-09-01"
+  "2026-09-01",
+  "2026-09-04"
  ],
  "resources": {
   "AC": [
@@ -4104,6 +4105,23 @@
     "rows": 295,
     "posts": 295,
     "disclosed": 64,
+    "blankRows": 0,
+    "validApplied": true,
+    "juniorRows": 0
+   },
+   {
+    "pkg": "organogram-department-for-international-trade",
+    "url": "https://s3-eu-west-1.amazonaws.com/datagovuk-production-ckan-organogram/organogram-department-for-international-trade/resources/2026-09-08T09-53-57Z-2026-06-30-organogram-senior.csv",
+    "created": "2026-09-08T09:53:57.219413",
+    "lastModified": "",
+    "referenceDate": "2026-06-30",
+    "confidence": "declared",
+    "basis": "url",
+    "sha256": "e5e8b9db9d37e8ead92e56a24e79e6bd46620876eec4d6d0634f39c00538252f",
+    "bytes": 94600,
+    "rows": 274,
+    "posts": 274,
+    "disclosed": 61,
     "blankRows": 0,
     "validApplied": true,
     "juniorRows": 0
@@ -8461,6 +8479,23 @@
     "rows": 199,
     "posts": 199,
     "disclosed": 48,
+    "blankRows": 0,
+    "validApplied": true,
+    "juniorRows": 0
+   },
+   {
+    "pkg": "dsit-organogram-of-staff-roles-salaries",
+    "url": "https://s3-eu-west-1.amazonaws.com/datagovuk-production-ckan-organogram/dsit-organogram-of-staff-roles-salaries/resources/2026-09-04T12-40-04Z-2026-09-04-organogram-senior.csv",
+    "created": "2026-09-04T12:40:04.586627",
+    "lastModified": "",
+    "referenceDate": "2026-09-04",
+    "confidence": "declared",
+    "basis": "url",
+    "sha256": "415642f91f6f897c77e4de7657402ff43507b2f85db527fdc72d70521038f52d",
+    "bytes": 68165,
+    "rows": 213,
+    "posts": 213,
+    "disclosed": 51,
     "blankRows": 0,
     "validApplied": true,
     "juniorRows": 0
@@ -26303,13 +26338,6 @@
    "pkg": "organogram-hm-revenue-and-customs",
    "date": "2024-03-31",
    "url": "https://s3-eu-west-1.amazonaws.com/datagovuk-production-ckan-organogram/organogram-hm-revenue-and-customs/resources/2024-04-29T09-17-33Z-2024-03-31-organogram-senior.csv",
-   "reason": "older-upload"
-  },
-  {
-   "org": "HMT",
-   "pkg": "organogram-hm-treasury",
-   "date": "2011-03-31",
-   "url": "http://budgetresponsibility.independent.gov.uk/pubs/OBR-staff-and-salary-data-template-March-2011-for-input-Final-V7-senior-data-4.csv",
    "reason": "older-upload"
   },
   {
